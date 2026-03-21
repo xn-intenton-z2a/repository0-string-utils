@@ -10,6 +10,7 @@
     "test": "vitest --run tests/unit/*.test.js",
     "test:unit": "vitest --run --coverage tests/unit/*.test.js",
     "test:behaviour": "npx playwright test --config playwright.config.js",
+    "test:behaviour:ci": "npx playwright install --with-deps && npx playwright test --config playwright.config.js",
     "start": "npm run build:web && npx serve docs",
     "start:cli": "node src/lib/main.js"
   },
