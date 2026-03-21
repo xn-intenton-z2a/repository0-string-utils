@@ -41,8 +41,7 @@ export function slugify(input) {
   const normalized = s.normalize ? s.normalize("NFKD") : s;
   const noDiacritics = normalized.replace(/[\u0300-\u036f]/g, "");
   // Remove punctuation except letters/numbers/space/hyphen (Unicode-aware)
-  const cleaned = noDiacritics.replace(/[^
-\p{L}\p{N}\s-]+/gu, "");
+  const cleaned = noDiacritics.replace(/[^\p{L}\p{N}\s-]+/gu, "");
   const slug = cleaned
     .trim()
     .replace(/[\s_]+/g, "-")
