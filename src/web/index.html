@@ -37,7 +37,22 @@
       document.getElementById('lib-name').textContent = name;
       document.getElementById('lib-version').textContent = version;
       document.getElementById('lib-description').textContent = description || '(no description)';
-      document.getElementById('demo-output').textContent = JSON.stringify({ name, version, description }, null, 2);
+      const demo = {
+        identity: { name, version, description },
+        examples: {
+          slugify: (await import('./lib.js')).slugify('Hello World!'),
+          truncate: (await import('./lib.js')).truncate('Hello World', 8),
+          camelCase: (await import('./lib.js')).camelCase('foo-bar-baz'),
+          kebabCase: (await import('./lib.js')).kebabCase('Foo Bar Baz'),
+          titleCase: (await import('./lib.js')).titleCase('foo bar baz'),
+          wordWrap: (await import('./lib.js')).wordWrap('This is a long sentence that should be wrapped around a width of 20 characters for demonstration.', 20),
+          stripHtml: (await import('./lib.js')).stripHtml('<p>Hello &amp; <strong>world</strong></p>'),
+          escapeRegex: (await import('./lib.js')).escapeRegex('hello.*+?^${}()|[]\\'),
+          pluralize: (await import('./lib.js')).pluralize('box'),
+          levenshtein: (await import('./lib.js')).levenshtein('kitten','sitting')
+        }
+      };
+      document.getElementById('demo-output').textContent = JSON.stringify(demo, null, 2);
       document.title = name + ' v' + version;
     } catch (e) {
       document.getElementById('lib-version').textContent = '(error)';
