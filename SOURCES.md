@@ -8,5 +8,13 @@ Reference material and documentation sources for this project.
 - https://www.npmjs.com/package/slugify
 - https://en.wikipedia.org/wiki/Levenshtein_distance
 - https://en.wikipedia.org/wiki/English_plural
+- https://lodash.com/docs/4.17.15#camelCase
+- https://lodash.com/docs/4.17.15#kebabCase
+- https://lodash.com/docs/4.17.15#startCase
+- https://lodash.com/docs/4.17.15#truncate
+- https://www.npmjs.com/package/word-wrap
+- https://www.npmjs.com/package/striptags
+- https://www.npmjs.com/package/fast-levenshtein
+- https://www.npmjs.com/package/pluralize
 
 The maintain-library workflow will process these into `library/` documents.

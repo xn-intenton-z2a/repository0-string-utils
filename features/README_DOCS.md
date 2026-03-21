@@ -2,28 +2,31 @@
 
 Summary
 
-Document library usage and provide concise examples for each exported function so consumers can quickly understand behaviour and edge cases.
+Provide concise usage documentation and examples for each exported function so consumers and tests can rely on documented behaviour.
 
 Documentation requirements
 
-- Update repository README.md to include a Usage section that imports the named functions from src/lib/main.js and demonstrates at least one example for each function.
+- Add a Usage section to repository README.md demonstrating importing the named functions from src/lib/main.js and showing one example for each function, with exact expected outputs.
 
-- For each function provide:
+- For each function include:
   - One-line description
-  - Example call and its expected output (literal)
-  - Notes on edge cases (null/undefined behaviour, Unicode support)
+  - Example call and expected literal output
+  - Notes on edge cases (null/undefined behaviour and Unicode support)
 
-Examples (to include in README):
-- import { slugify } from './src/lib/main.js'
-- slugify("Hello World!") // "hello-world"
+Required examples (exact outputs)
 
-- import { truncate } from './src/lib/main.js'
-- truncate("Hello World", 8) // "Hello…"
-
-- import { levenshtein } from './src/lib/main.js'
-- levenshtein("kitten","sitting") // 3
+- slugify("Hello World!") => "hello-world"
+- truncate("Hello World", 8) => "Hello…"
+- camelCase("foo-bar-baz") => "fooBarBaz"
+- kebabCase("Hello World") => "hello-world"
+- titleCase("hello world") => "Hello World"
+- wordWrap("a b c", 1) => "a\nb\nc"
+- stripHtml("<b>Bold &amp; Brave</b>") => "Bold & Brave"
+- escapeRegex("a+b(c)") => "a\\+b\\(c\\)"
+- pluralize("box") => "boxes"
+- levenshtein("kitten","sitting") => 3
 
 Acceptance criteria
 
-- README contains a Usage section with examples for all ten functions and notes about null/undefined handling and Unicode.
-- Examples show exact expected outputs to guide test writing and verification.
+- README.md contains a Usage section with the examples above and notes on null/undefined handling and Unicode.
+- Examples use exact expected outputs so unit tests and documentation stay aligned.

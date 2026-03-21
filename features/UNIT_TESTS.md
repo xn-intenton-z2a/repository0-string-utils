@@ -2,19 +2,15 @@
 
 Summary
 
-Provide a comprehensive, deterministic test suite that verifies each function's behaviour including normal cases, edge-cases, and the mission's acceptance examples. Tests must live in tests/unit/ and target exact expected outputs.
+Provide a deterministic unit test suite that verifies each function's behaviour including the mission acceptance examples and edge cases.
 
-Test requirements
+Test structure
 
-- One test file per function is acceptable, or a single file covering all functions; tests must be under tests/unit/ and runnable via npm test.
+- Single test file tests/unit/main.test.js is acceptable and recommended for simplicity.
+- Tests must be runnable with npm test and make explicit equality assertions.
 
-- For each function include tests for:
-  - Typical inputs (normal sentences, punctuation)
-  - Specified examples from the mission (slugify, truncate, camelCase, levenshtein)
-  - Edge cases: null, undefined, empty string, Unicode, long words
-  - Failure modes: ensure no exceptions are thrown for documented inputs
+Required test cases (each must be present)
 
-Concrete test cases (examples to include verbatim):
 - slugify("Hello World!") => "hello-world"
 - truncate("Hello World", 8) => "Hello…"
 - camelCase("foo-bar-baz") => "fooBarBaz"
@@ -22,16 +18,20 @@ Concrete test cases (examples to include verbatim):
 - titleCase("hello world") => "Hello World"
 - wordWrap("a b c", 1) => "a\nb\nc"
 - stripHtml("<b>Bold</b>") => "Bold"
-- escapeRegex("a+b(c)") => "a\+b\(c\)"
-- pluralize("box") => "boxes"; pluralize("party") => "parties"; pluralize("leaf") => "leaves"
+- stripHtml("<p>Hello &amp; welcome</p>") => "Hello & welcome"
+- escapeRegex("a+b(c)") => "a\\+b\\(c\\)"
+- pluralize("box") => "boxes"
+- pluralize("party") => "parties"
+- pluralize("leaf") => "leaves"
 - levenshtein("kitten", "sitting") => 3
+- Edge cases: null/undefined for several functions return empty string and do not throw
+- Unicode: examples include accented characters and emoji and assert preservation where appropriate
 
-Coverage and quality
+Coverage goal
 
-- Aim for line coverage >= 50% as a minimum project goal; tests should be deterministic and avoid network or environment dependencies.
-- Tests must assert specific string equality rather than loose matches.
+- Aim for line coverage >= 50% as a minimum project goal.
 
 Acceptance criteria
 
-- Unit tests cover each function and include the concrete examples above.
-- Running npm test exits with success (this is verified by CI / later transform).
+- tests/unit/main.test.js contains the concrete test cases above and asserts exact outputs.
+- npm test runs the suite (CI will verify) and the suite is deterministic and self-contained.
