@@ -8,13 +8,15 @@
   <meta property="og:description" content="An autonomous repository powered by agentic-lib">
   <meta property="og:type" content="website">
   <style>
-    body { font-family: system-ui, -apple-system, sans-serif; max-width: 800px; margin: 0 auto; padding: 2rem; color: #333; }
+    body { font-family: system-ui, -apple-system, sans-serif; max-width: 900px; margin: 0 auto; padding: 2rem; color: #333; }
     h1 { border-bottom: 2px solid #eee; padding-bottom: 0.5rem; }
     a { color: #0366d6; }
     .identity { background: #f6f8fa; padding: 1rem; border-radius: 6px; margin: 1rem 0; font-family: monospace; }
     .identity dt { font-weight: bold; color: #666; }
     .identity dd { margin: 0 0 0.5rem 0; font-size: 1.1rem; }
     #demo-output { background: #1e1e1e; color: #d4d4d4; padding: 1rem; border-radius: 6px; font-family: monospace; white-space: pre-wrap; min-height: 2rem; }
+    .demo { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-top: 1rem; }
+    .demo pre { background: #fafafa; padding: 1rem; border-radius: 6px; white-space: pre-wrap; }
   </style>
 </head>
 <body>
@@ -27,17 +29,48 @@
       <dd id="lib-description">loading...</dd>
     </dl>
   </div>
-  <h2>Output</h2>
+
+  <h2>Demo Output</h2>
   <div id="demo-output">Loading library...</div>
+
+  <h2>Examples</h2>
+  <div class="demo">
+    <div>
+      <h3>Transformations</h3>
+      <pre id="ex-transform">loading...</pre>
+    </div>
+    <div>
+      <h3>Utilities</h3>
+      <pre id="ex-utils">loading...</pre>
+    </div>
+  </div>
+
   <h2>About</h2>
-  <p>This website uses the library. See <a href="https://github.com/xn-intenton-z2a/repository0">the repository</a> for source code and mission details.</p>
+  <p>This website uses the real library in <code>src/lib/main.js</code>. See <a href="https://github.com/xn-intenton-z2a/repository0">the repository</a> for source code and mission details.</p>
   <script type="module">
     try {
-      const { name, version, description } = await import('./lib.js');
+      const lib = await import('./lib.js');
+      const { name, version, description } = lib;
       document.getElementById('lib-name').textContent = name;
       document.getElementById('lib-version').textContent = version;
       document.getElementById('lib-description').textContent = description || '(no description)';
-      document.getElementById('demo-output').textContent = JSON.stringify({ name, version, description }, null, 2);
+      document.getElementById('demo-output').textContent = JSON.stringify(lib.getIdentity(), null, 2);
+
+      // Examples
+      document.getElementById('ex-transform').textContent = [
+        `slugify('Hello World!') -> ${lib.slugify('Hello World!')}`,
+        `camelCase('foo-bar-baz') -> ${lib.camelCase('foo-bar-baz')}`,
+        `kebabCase('Foo Bar') -> ${lib.kebabCase('Foo Bar')}`,
+        `titleCase('hello world') -> ${lib.titleCase('hello world')}`,
+      ].join('\n');
+
+      document.getElementById('ex-utils').textContent = [
+        `truncate('Hello World', 8) -> ${lib.truncate('Hello World', 8)}`,
+        `pluralize('box') -> ${lib.pluralize('box')}`,
+        `levenshtein('kitten','sitting') -> ${lib.levenshtein('kitten','sitting')}`,
+        `stripHtml('<p>Hi &amp; <em>there</em></p>') -> ${lib.stripHtml('<p>Hi &amp; <em>there</em></p>')}`,
+      ].join('\n');
+
       document.title = name + ' v' + version;
     } catch (e) {
       document.getElementById('lib-version').textContent = '(error)';
