@@ -1,10 +1,12 @@
 # CORE_FUNCTIONS
 
+Status: IMPLEMENTED (see src/lib/main.js)
+
 Summary
 
-Implement the library's public API: ten named functions exported from src/lib/main.js. Each function is a separately exported, well-documented, zero-dependency utility and must follow the behaviour described below.
+This feature specifies the library's public API: ten named functions exported from src/lib/main.js. Implementation has been completed in src/lib/main.js; this document now records the behaviour, examples and verification checks used by tests and documentation.
 
-Specification
+Specification (behaviour)
 
 1. slugify(input)
    - Convert input to a URL-friendly slug: convert to string, trim, convert to lowercase, replace any run of whitespace or punctuation with a single hyphen, remove characters that are not letters, numbers or hyphen, collapse multiple hyphens, remove leading/trailing hyphens.
@@ -48,10 +50,15 @@ Specification
    - Return the Levenshtein edit distance between strings a and b. Treat null/undefined as empty string. Operate on Unicode code points to avoid splitting surrogate pairs.
    - Example: levenshtein("kitten", "sitting") => 3.
 
-Acceptance criteria (testable)
+Notes
 
-- Exports: All ten functions are exported as named exports from src/lib/main.js and importable by consuming code.
-- Behavioural tests:
+- Implementation exists in src/lib/main.js and is exported as named functions. Keep this file as the canonical behavioural specification for test and docs alignment.
+- Any future changes to behaviour must update unit tests and README examples accordingly.
+
+Acceptance criteria (current)
+
+- Exports: All ten functions are exported as named exports from src/lib/main.js.
+- Behavioural checks (examples):
   - slugify("Hello World!") === "hello-world".
   - truncate("Hello World", 8) === "Hello…".
   - camelCase("foo-bar-baz") === "fooBarBaz".
@@ -62,5 +69,9 @@ Acceptance criteria (testable)
   - escapeRegex("a+b(c)") === "a\\+b\\(c\\)".
   - pluralize("box") === "boxes"; pluralize("party") === "parties"; pluralize("leaf") === "leaves".
   - levenshtein("kitten", "sitting") === 3.
-- Edge cases: Passing null or undefined to string-producing functions returns empty string and does not throw; Unicode characters (accents, emoji) are preserved and handled consistently.
-- No external runtime dependencies introduced.
+
+- Edge cases: Passing null or undefined to string-producing functions returns empty string and does not throw; Unicode characters are preserved and handled consistently.
+
+Verification notes
+
+- Tests and README must reference these exact outputs so they can be verified automatically. If tests disagree, update either the implementation or these specs in coordination with test changes.

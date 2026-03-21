@@ -29,3 +29,8 @@ Reference material and documentation sources for this project. Grouped and canon
 - https://html.spec.whatwg.org/multipage/named-characters.html
 
 - https://tc39.es/ecma262/#sec-strings
+
+# Additional references added 2026-03-21
+- https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String/toLowerCase
+- https://unicode.org/Public/UNIDATA/SpecialCasing.txt
+- https://unicode.org/Public/UNIDATA/CaseFolding.txt
