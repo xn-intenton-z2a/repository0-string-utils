@@ -1,36 +1,6 @@
 # Sources
 
-Reference material and documentation sources for this project. Grouped and canonicalised for the string-utils mission.
+Reference material and documentation sources for this project.
 
-- https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String
-- https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String/normalize
-- https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide/Regular_Expressions#escaping
-- https://developer.mozilla.org/en-US/docs/Glossary/Entity
-- https://developer.mozilla.org/en-US/docs/Glossary/Unicode
-- https://developer.mozilla.org/en-US/docs/Glossary/Grapheme_cluster
-
-- https://lodash.com/docs/4.17.15#camelCase
-- https://lodash.com/docs/4.17.15#kebabCase
-- https://lodash.com/docs/4.17.15#startCase
-- https://lodash.com/docs/4.17.15#truncate
-
-- https://www.npmjs.com/package/he
-- https://www.npmjs.com/package/slugify
-- https://www.npmjs.com/package/word-wrap
-- https://www.npmjs.com/package/striptags
-- https://www.npmjs.com/package/fast-levenshtein
-- https://www.npmjs.com/package/pluralize
-
-- https://en.wikipedia.org/wiki/Levenshtein_distance
-- https://en.wikipedia.org/wiki/English_plural
-
-- https://unicode.org/reports/tr29/
-- https://unicode.org/reports/tr15/
-- https://html.spec.whatwg.org/multipage/named-characters.html
-
-- https://tc39.es/ecma262/#sec-strings
-
-# Additional references added 2026-03-21
-- https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String/toLowerCase
-- https://unicode.org/Public/UNIDATA/SpecialCasing.txt
-- https://unicode.org/Public/UNIDATA/CaseFolding.txt
+Add URLs, papers, API docs, or other reference material here.
+The maintain-library workflow will process these into `library/` documents.

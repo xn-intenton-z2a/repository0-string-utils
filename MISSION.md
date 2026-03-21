@@ -26,11 +26,11 @@ The library must provide these 10 string operations, exported as named functions
 
 ## Acceptance Criteria
 
-- [x] All 10 functions are exported and work correctly
-- [x] Slugifying `"Hello World!"` produces `"hello-world"`
-- [x] Truncating `"Hello World"` to length 8 produces `"Hello…"`
-- [x] camelCase of `"foo-bar-baz"` produces `"fooBarBaz"`
-- [x] Levenshtein distance between `"kitten"` and `"sitting"` is `3`
-- [x] Edge cases (empty string, null, Unicode) handled gracefully
-- [x] All unit tests pass
-- [x] README documents all functions with examples
+- [ ] All 10 functions are exported and work correctly
+- [ ] Slugifying `"Hello World!"` produces `"hello-world"`
+- [ ] Truncating `"Hello World"` to length 8 produces `"Hello…"`
+- [ ] camelCase of `"foo-bar-baz"` produces `"fooBarBaz"`
+- [ ] Levenshtein distance between `"kitten"` and `"sitting"` is `3`
+- [ ] Edge cases (empty string, null, Unicode) handled gracefully
+- [ ] All unit tests pass
+- [ ] README documents all functions with examples
