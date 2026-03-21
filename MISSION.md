@@ -1,26 +1,36 @@
 # Mission
 
-A JavaScript library exporting FizzBuzz functions. This is the simplest possible mission — if the pipeline can't complete this and stop, something is fundamentally broken.
+A JavaScript library of string utility functions. This is a bag-of-functions problem — each function is independent.
 
-## Core Functions
+## Required Capabilities
 
-- `fizzBuzz(n)` — return an array of strings from 1 to n, replacing multiples of 3 with "Fizz", multiples of 5 with "Buzz", and multiples of both with "FizzBuzz".
-- `fizzBuzzSingle(n)` — return the FizzBuzz string for a single positive integer.
+The library must provide these 10 string operations, exported as named functions from `src/lib/main.js`:
+
+- **Slugify** — convert to URL-friendly slug (lowercase, hyphens, strip non-alphanumeric)
+- **Truncate** — truncate with suffix (default "…"), don't break mid-word
+- **camelCase** — convert to camelCase
+- **kebabCase** — convert to kebab-case
+- **titleCase** — capitalise first letter of each word
+- **wordWrap** — soft wrap text at word boundaries. Never break a word. If a single word exceeds `width`, place it on its own line unbroken. Line separator is `\n`.
+- **stripHtml** — remove HTML tags, decode common entities
+- **escapeRegex** — escape special regex characters
+- **Pluralize** — basic English pluralisation. Rules: words ending in s/x/z/ch/sh add "es"; consonant+"y" changes to "ies"; "f"/"fe" changes to "ves"; all others add "s". Irregular plurals (mouse/mice, child/children) are out of scope.
+- **Levenshtein distance** — compute edit distance between two strings
 
 ## Requirements
 
-- Handle edge cases: `n = 0` returns an empty array, negative numbers throw `RangeError`, non-integers throw `TypeError`.
-- Export both functions as named exports from `src/lib/main.js`.
-- Comprehensive unit tests covering normal operation and all edge cases.
-- README with usage examples.
+- Handle edge cases: empty strings, null/undefined (return empty string), Unicode characters.
+- No external runtime dependencies.
+- Comprehensive unit tests for each function including edge cases.
+- README with usage examples for each function.
 
 ## Acceptance Criteria
 
-- [ ] `fizzBuzz(15)` returns the correct 15-element array ending with "FizzBuzz"
-- [ ] `fizzBuzzSingle(3)` returns "Fizz"
-- [ ] `fizzBuzzSingle(5)` returns "Buzz"
-- [ ] `fizzBuzzSingle(15)` returns "FizzBuzz"
-- [ ] `fizzBuzzSingle(7)` returns "7"
-- [ ] `fizzBuzz(0)` returns `[]`
+- [ ] All 10 functions are exported and work correctly
+- [ ] Slugifying `"Hello World!"` produces `"hello-world"`
+- [ ] Truncating `"Hello World"` to length 8 produces `"Hello…"`
+- [ ] camelCase of `"foo-bar-baz"` produces `"fooBarBaz"`
+- [ ] Levenshtein distance between `"kitten"` and `"sitting"` is `3`
+- [ ] Edge cases (empty string, null, Unicode) handled gracefully
 - [ ] All unit tests pass
-- [ ] README documents usage with examples
+- [ ] README documents all functions with examples
