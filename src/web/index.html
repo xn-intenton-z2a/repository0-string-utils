@@ -8,13 +8,17 @@
   <meta property="og:description" content="An autonomous repository powered by agentic-lib">
   <meta property="og:type" content="website">
   <style>
-    body { font-family: system-ui, -apple-system, sans-serif; max-width: 800px; margin: 0 auto; padding: 2rem; color: #333; }
+    body { font-family: system-ui, -apple-system, sans-serif; max-width: 900px; margin: 0 auto; padding: 2rem; color: #333; }
     h1 { border-bottom: 2px solid #eee; padding-bottom: 0.5rem; }
     a { color: #0366d6; }
     .identity { background: #f6f8fa; padding: 1rem; border-radius: 6px; margin: 1rem 0; font-family: monospace; }
     .identity dt { font-weight: bold; color: #666; }
     .identity dd { margin: 0 0 0.5rem 0; font-size: 1.1rem; }
     #demo-output { background: #1e1e1e; color: #d4d4d4; padding: 1rem; border-radius: 6px; font-family: monospace; white-space: pre-wrap; min-height: 2rem; }
+    .features { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 1rem; margin-top: 1rem; }
+    .feature { border: 1px solid #eee; padding: 0.75rem; border-radius: 6px; background: #fff; }
+    .feature h3 { margin: 0 0 0.5rem 0; font-size: 1rem; }
+    .feature pre { background: #f7f7f7; padding: 0.5rem; border-radius: 4px; overflow:auto; }
   </style>
 </head>
 <body>
@@ -27,18 +31,49 @@
       <dd id="lib-description">loading...</dd>
     </dl>
   </div>
+
   <h2>Output</h2>
   <div id="demo-output">Loading library...</div>
+
+  <h2>Features</h2>
+  <div class="features">
+    <div class="feature"><h3>Slugify</h3><pre id="demo-slugify"></pre></div>
+    <div class="feature"><h3>Truncate</h3><pre id="demo-truncate"></pre></div>
+    <div class="feature"><h3>camelCase</h3><pre id="demo-camelCase"></pre></div>
+    <div class="feature"><h3>kebabCase</h3><pre id="demo-kebabCase"></pre></div>
+    <div class="feature"><h3>titleCase</h3><pre id="demo-titleCase"></pre></div>
+    <div class="feature"><h3>wordWrap</h3><pre id="demo-wordWrap"></pre></div>
+    <div class="feature"><h3>stripHtml</h3><pre id="demo-stripHtml"></pre></div>
+    <div class="feature"><h3>escapeRegex</h3><pre id="demo-escapeRegex"></pre></div>
+    <div class="feature"><h3>pluralize</h3><pre id="demo-pluralize"></pre></div>
+    <div class="feature"><h3>levenshtein</h3><pre id="demo-levenshtein"></pre></div>
+  </div>
+
   <h2>About</h2>
   <p>This website uses the library. See <a href="https://github.com/xn-intenton-z2a/repository0">the repository</a> for source code and mission details.</p>
+
   <script type="module">
     try {
-      const { name, version, description } = await import('./lib.js');
+      const lib = await import('./lib.js');
+      const { name, version, description } = lib;
       document.getElementById('lib-name').textContent = name;
       document.getElementById('lib-version').textContent = version;
       document.getElementById('lib-description').textContent = description || '(no description)';
       document.getElementById('demo-output').textContent = JSON.stringify({ name, version, description }, null, 2);
       document.title = name + ' v' + version;
+
+      // Populate feature demos
+      document.getElementById('demo-slugify').textContent = lib.slugify('Hello World!') + '\n' + lib.slugify('こんにちは 世界');
+      document.getElementById('demo-truncate').textContent = lib.truncate('Hello World', 8);
+      document.getElementById('demo-camelCase').textContent = lib.camelCase('foo-bar-baz');
+      document.getElementById('demo-kebabCase').textContent = lib.kebabCase('fooBarBaz');
+      document.getElementById('demo-titleCase').textContent = lib.titleCase('the quick brown fox');
+      document.getElementById('demo-wordWrap').textContent = lib.wordWrap('The quick brown fox jumps over the lazy dog', 12);
+      document.getElementById('demo-stripHtml').textContent = lib.stripHtml('<p>Hello &amp; <strong>World</strong></p>');
+      document.getElementById('demo-escapeRegex').textContent = lib.escapeRegex('a+b(c)');
+      document.getElementById('demo-pluralize').textContent = [ 'cat', 'bus', 'baby', 'leaf' ].map(w => w + ' -> ' + lib.pluralize(w)).join('\n');
+      document.getElementById('demo-levenshtein').textContent = 'kitten -> sitting = ' + lib.levenshtein('kitten','sitting');
+
     } catch (e) {
       document.getElementById('lib-version').textContent = '(error)';
       document.getElementById('lib-description').textContent = e.message;
