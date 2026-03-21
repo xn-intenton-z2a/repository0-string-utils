@@ -7,7 +7,6 @@
 
 [schedule]
 supervisor = "off"       # off | weekly | daily | hourly | continuous
-model = "gpt-5-mini"
 focus = "mission"                 # mission | maintenance
 
 [paths]
@@ -40,7 +39,7 @@ test = "npm ci && npm test"
 [tuning]
 # Profile sets defaults for all tuning and limit knobs: min | med | max
 # Profile definitions live in [profiles.*] sections below.
-profile = "max"
+profile = "med"
 #
 # Model selection — each has different strengths:
 #   gpt-5-mini      — Fast, cheap, supports reasoning-effort. Best for CI and iteration.
@@ -185,7 +184,7 @@ total = 8
 8 = { text = "README documents all functions with examples", met = false }
 
 [init]
-timestamp = "2026-03-21T00:42:38.401Z"
+timestamp = "2026-03-21T02:01:34.566Z"
 mode = "purge"
 mission = "5-kyu-apply-string-utils"
 mission-type = "5-kyu-apply-string-utils"
