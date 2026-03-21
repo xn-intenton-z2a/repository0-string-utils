@@ -27,264 +27,97 @@ export function getIdentity() {
   return { name, version, description };
 }
 
-function safeString(input) {
-  if (input === null || input === undefined) return "";
-  return String(input);
-}
-
-export function slugify(input) {
-  const s = safeString(input).normalize('NFKD');
-  // remove diacritics
-  const noDiacritics = s.replace(/\p{M}/gu, '');
-  // keep letters and numbers and spaces, replace others with space
-  const cleaned = noDiacritics.replace(/[^\p{L}\p{N}]+/gu, '-');
-  const collapsed = cleaned.replace(/-+/g, '-').replace(/^-|-$/g, '');
-  return collapsed.toLowerCase();
-}
-
-export function truncate(input, maxLength = 80, suffix = '…') {
-  const s = safeString(input);
-  if (maxLength <= 0) return suffix;
-  if (s.length <= maxLength) return s;
-  const head = s.slice(0, maxLength);
-  const lastSpace = head.lastIndexOf(' ');
-  if (lastSpace > 0) {
-    return head.slice(0, lastSpace).trim() + suffix;
-  }
-  return head.trim() + suffix;
-}
-
-function splitWords(s) {
-  // normalize and strip diacritics, then split on non letter/number sequences
-  const norm = safeString(s).normalize('NFKD').replace(/\p{M}/gu, '');
-  return norm.split(/[^\p{L}\p{N}]+/u).filter(Boolean);
-}
-
-export function camelCase(input) {
-  const s = safeString(input);
-  const words = splitWords(s);
-  if (!words.length) return '';
-  const first = words[0].toLowerCase();
-  const rest = words.slice(1).map(w => w[0]?.toUpperCase() + w.slice(1).toLowerCase());
-  return [first, ...rest].join('');
-}
-
-export function kebabCase(input) {
-  const s = safeString(input).normalize('NFKD').replace(/\p{M}/gu, '');
-  const words = splitWords(s);
-  return words.map(w => w.toLowerCase()).join('-');
-}
-
-export function titleCase(input) {
-  const s = safeString(input);
-  return splitWords(s).map(w => w[0]?.toUpperCase() + w.slice(1).toLowerCase()).join(' ');
-}
-
-export function wordWrap(input, width = 80) {
-  const s = safeString(input);
-  if (width <= 0) return s;
-  const words = s.split(/\s+/).filter(Boolean);
-  if (!words.length) return '';
-  const lines = [];
-  let current = '';
-  for (const w of words) {
-    if (current.length === 0) {
-      // start new line
-      if (w.length > width) {
-        // place long word on its own line
-        lines.push(w);
-      } else {
-        current = w;
-      }
-    } else {
-      if (current.length + 1 + w.length <= width) {
-        current += ' ' + w;
-      } else {
-        lines.push(current);
-        if (w.length > width) {
-          lines.push(w);
-          current = '';
-        } else {
-          current = w;
-        }
-      }
-    }
-  }
-  if (current) lines.push(current);
-  return lines.join('\n');
-}
-
-export function stripHtml(input) {
-  let s = safeString(input);
-  // remove tags
-  s = s.replace(/<[^>]*>/g, '');
-  // decode simple entities
-  const entities = {
-    '&amp;': '&',
-    '&lt;': '<',
-    '&gt;': '>',
-    '&quot;': '"',
-    '&#39;': "'",
-    '&apos;': "'",
-    '&nbsp;': ' '
-  };
-  s = s.replace(/&[#a-zA-Z0-9]+;/g, (m) => {
-    if (entities[m]) return entities[m];
-    // numeric
-    const num = m.match(/&#(\d+);/);
-    if (num) return String.fromCodePoint(Number(num[1]));
-    const hex = m.match(/&#x([0-9a-fA-F]+);/);
-    if (hex) return String.fromCodePoint(parseInt(hex[1], 16));
-    return m;
-  });
-  return s;
-}
-
-export function escapeRegex(input) {
-  const s = safeString(input);
-  return s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-}
-
-export function pluralize(input) {
-  const s = safeString(input);
-  if (!s) return '';
-  const lower = s.toLowerCase();
-  if (/(s|x|z|ch|sh)$/i.test(lower)) return s + 'es';
-  if (/[^aeiou]y$/i.test(lower)) return s.slice(0, -1) + 'ies';
-  if (/(?:f|fe)$/i.test(lower)) {
-    if (lower.endsWith('fe')) return s.slice(0, -2) + 'ves';
-    return s.slice(0, -1) + 'ves';
-  }
-  return s + 's';
-}
-
-export function levenshtein(a, b) {
-  const A = safeString(a);
-  const B = safeString(b);
-  const la = A.length;
-  const lb = B.length;
-  if (la === 0) return lb;
-  if (lb === 0) return la;
-  // use two-row DP
-  let prev = new Array(lb + 1).fill(0).map((_, i) => i);
-  let cur = new Array(lb + 1).fill(0);
-  for (let i = 1; i <= la; i++) {
-    cur[0] = i;
-    for (let j = 1; j <= lb; j++) {
-      const cost = A[i - 1] === B[j - 1] ? 0 : 1;
-      cur[j] = Math.min(prev[j] + 1, cur[j - 1] + 1, prev[j - 1] + cost);
-    }
-    [prev, cur] = [cur, prev];
-  }
-  return prev[lb];
-}
-
-export function main(args) {
-  if (args?.includes("--version")) {
-    console.log(version);
-    return;
-  }
-  if (args?.includes("--identity")) {
-    console.log(JSON.stringify(getIdentity(), null, 2));
-    return;
-  }
-  console.log(`${name}@${version}`);
-}
-
-// String utility helpers
+// Helper: safely convert to string; null/undefined -> ''
 function toStringSafe(input) {
   if (input === null || input === undefined) return "";
   return String(input);
 }
 
+// Normalize and remove diacritics; returns basic ascii-friendly form for splitting
+function normalizeForWords(s) {
+  return toStringSafe(s).normalize('NFKD').replace(/\p{M}/gu, '');
+}
+
+// 1) Slugify: lowercase, hyphens, strip non-alphanumeric
 export function slugify(input) {
-  const s = toStringSafe(input);
-  if (!s) return "";
-  // Normalize and remove diacritics
-  let out = s.normalize('NFKD').replace(/\p{Diacritic}/gu, '');
-  // Replace any non letter/number with hyphen, collapse multiple hyphens, lowercase
-  out = out
-    .toLowerCase()
-    .replace(/[^\p{L}\p{N}]+/gu, '-')
-    .replace(/^-+|-+$/g, '')
-    .replace(/-+/g, '-');
-  return out;
-}
-
-export function truncate(input, maxLength = 100, suffix = '\u2026') {
-  const s = toStringSafe(input);
-  if (!s) return '';
-  const max = Math.max(0, Number(maxLength) || 0);
-  const suf = String(suffix || '\u2026');
-  if (s.length <= max) return s;
-  // If max is too small to include any original content (<= suffix length + 1), just return the suffix trimmed to fit
-  if (max <= suf.length + 1) return suf.slice(0, max);
-  const cut = s.slice(0, Math.max(0, max - suf.length));
-  // Don't break mid-word if possible
-  const idx = cut.lastIndexOf(' ');
-  if (idx > 0) {
-    return cut.slice(0, idx) + suf;
-  }
-  return cut + suf;
-}
-
-export function camelCase(input) {
-  const s = toStringSafe(input);
-  if (!s) return '';
-  const parts = s
-    .trim()
-    .split(/[^\p{L}\p{N}]+/u)
-    .filter(Boolean)
-    .map(p => p.toLowerCase());
-  if (parts.length === 0) return '';
-  return parts[0] + parts.slice(1).map(w => w[0].toUpperCase() + w.slice(1)).join('');
-}
-
-export function kebabCase(input) {
-  const s = toStringSafe(input);
+  const s = normalizeForWords(input);
   if (!s) return '';
   const out = s
-    .normalize('NFKD')
-    .replace(/\p{Diacritic}/gu, '')
     .toLowerCase()
-    .replace(/[^\p{L}\p{N}]+/gu, '-')
-    .replace(/^-+|-+$/g, '')
-    .replace(/-+/g, '-');
+    .replace(/[^\p{L}\p{N}]+/gu, '-') // non letters/numbers -> -
+    .replace(/^-+|-+$/g, '') // trim -
+    .replace(/-+/g, '-'); // collapse
   return out;
 }
 
-export function titleCase(input) {
+// 2) Truncate: don't break mid-word if possible, add suffix (default ellipsis)
+export function truncate(input, maxLength = 80, suffix = '…') {
   const s = toStringSafe(input);
   if (!s) return '';
-  return s
-    .split(/(\s+)/)
-    .map(token => {
-      if (/^\s+$/.test(token)) return token;
-      return token[0]?.toUpperCase() + token.slice(1).toLowerCase();
-    })
-    .join('');
+  const max = Number(maxLength) || 0;
+  const suf = String(suffix || '…');
+  if (max <= 0) return suf.slice(0, Math.max(0, max));
+  if (s.length <= max) return s;
+  // Reserve space for suffix
+  const avail = Math.max(0, max - suf.length);
+  if (avail === 0) return suf.slice(0, max);
+  let head = s.slice(0, avail);
+  const lastSpace = head.lastIndexOf(' ');
+  if (lastSpace > 0) head = head.slice(0, lastSpace);
+  return head + suf;
 }
 
+// 3) camelCase
+export function camelCase(input) {
+  const s = normalizeForWords(input);
+  if (!s) return '';
+  const parts = s.split(/[^\p{L}\p{N}]+/u).filter(Boolean).map(p => p.toLowerCase());
+  if (!parts.length) return '';
+  return parts[0] + parts.slice(1).map(w => w[0]?.toUpperCase() + w.slice(1)).join('');
+}
+
+// 4) kebabCase
+export function kebabCase(input) {
+  const s = normalizeForWords(input);
+  if (!s) return '';
+  return s
+    .toLowerCase()
+    .split(/[^\p{L}\p{N}]+/u)
+    .filter(Boolean)
+    .join('-');
+}
+
+// 5) titleCase (capitalize first letter of each word)
+export function titleCase(input) {
+  const s = normalizeForWords(input);
+  if (!s) return '';
+  return s
+    .split(/\s+/)
+    .filter(Boolean)
+    .map(w => w[0]?.toUpperCase() + w.slice(1).toLowerCase())
+    .join(' ');
+}
+
+// 6) wordWrap: soft wrap at word boundaries, never break a word; long words go on their own line
 export function wordWrap(input, width = 80) {
   const s = toStringSafe(input);
   if (!s) return '';
-  const w = Math.max(1, Number(width) || 80);
-  const words = s.split(/\s+/);
+  const w = Math.max(1, Number(width) || 1);
+  const words = s.split(/\s+/).filter(Boolean);
+  if (!words.length) return '';
   const lines = [];
   let current = '';
   for (const word of words) {
     if (!current) {
-      // start line
       if ([...word].length > w) {
-        // single word longer than width -> place alone
+        // place long word alone
         lines.push(word);
       } else {
         current = word;
       }
     } else {
-      const candidate = current + ' ' + word;
-      if ([...candidate].length <= w) {
-        current = candidate;
+      if (([...current].length + 1 + [...word].length) <= w) {
+        current = current + ' ' + word;
       } else {
         lines.push(current);
         if ([...word].length > w) {
@@ -300,55 +133,55 @@ export function wordWrap(input, width = 80) {
   return lines.join('\n');
 }
 
+// 7) stripHtml: remove tags and decode basic entities
 export function stripHtml(input) {
-  const s = toStringSafe(input);
+  let s = toStringSafe(input);
   if (!s) return '';
-  // Remove tags
-  let out = s.replace(/<[^>]*>/g, '');
-  // Decode basic entities
-  const entities = {
-    amp: '&',
-    lt: '<',
-    gt: '>',
-    quot: '"',
-    apos: "'",
-    nbsp: ' '
+  // remove tags
+  s = s.replace(/<[^>]*>/g, '');
+  // basic named entities
+  const map = {
+    'amp': '&',
+    'lt': '<',
+    'gt': '>',
+    'quot': '"',
+    'apos': "'",
+    'nbsp': ' '
   };
-  out = out.replace(/&([a-zA-Z]+);/g, (m, name) => entities[name] ?? m);
+  s = s.replace(/&([a-zA-Z]+);/g, (m, name) => map[name] ?? m);
   // numeric entities
-  out = out.replace(/&#(x?[0-9a-fA-F]+);/g, (m, num) => {
-    const code = num.startsWith('x') ? parseInt(num.slice(1), 16) : parseInt(num, 10);
-    if (Number.isNaN(code)) return m;
+  s = s.replace(/&#(x?[0-9a-fA-F]+);/g, (m, num) => {
     try {
+      const code = num.toLowerCase().startsWith('x') ? parseInt(num.slice(1), 16) : parseInt(num, 10);
+      if (Number.isNaN(code)) return m;
       return String.fromCodePoint(code);
     } catch (e) {
       return m;
     }
   });
-  return out;
+  return s;
 }
 
+// 8) escapeRegex: escape special regex chars
 export function escapeRegex(input) {
   const s = toStringSafe(input);
   if (!s) return '';
   return s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 }
 
+// 9) pluralize: basic English pluralisation rules
 export function pluralize(input) {
   const s = toStringSafe(input);
   if (!s) return '';
   const lower = s.toLowerCase();
-  // es endings
   if (/(s|x|z|ch|sh)$/i.test(lower)) return s + 'es';
-  // consonant + y -> ies
   if (/[b-df-hj-np-tv-z]y$/i.test(lower)) return s.slice(0, -1) + 'ies';
-  // f/fe -> ves
   if (/fe$/i.test(lower)) return s.slice(0, -2) + 'ves';
   if (/f$/i.test(lower)) return s.slice(0, -1) + 'ves';
-  // default
   return s + 's';
 }
 
+// 10) levenshtein distance (two-row DP)
 export function levenshtein(a, b) {
   const s = toStringSafe(a);
   const t = toStringSafe(b);
@@ -356,24 +189,38 @@ export function levenshtein(a, b) {
   const m = t.length;
   if (n === 0) return m;
   if (m === 0) return n;
-  // Use two-row DP
-  let prev = new Array(m + 1);
-  for (let j = 0; j <= m; j++) prev[j] = j;
-  for (let i = 1; i <= n; i++) {
-    let cur = [i];
-    for (let j = 1; j <= m; j++) {
-      const cost = s[i - 1] === t[j - 1] ? 0 : 1;
+  // work with code points to handle Unicode properly
+  const sa = Array.from(s);
+  const ta = Array.from(t);
+  let prev = new Array(ta.length + 1);
+  for (let j = 0; j <= ta.length; j++) prev[j] = j;
+  for (let i = 1; i <= sa.length; i++) {
+    const cur = [i];
+    for (let j = 1; j <= ta.length; j++) {
+      const cost = sa[i - 1] === ta[j - 1] ? 0 : 1;
       cur[j] = Math.min(cur[j - 1] + 1, prev[j] + 1, prev[j - 1] + cost);
     }
     prev = cur;
   }
-  return prev[m];
+  return prev[ta.length];
+}
+
+// CLI entry
+export function main(args) {
+  if (args?.includes('--version')) {
+    console.log(version);
+    return;
+  }
+  if (args?.includes('--identity')) {
+    console.log(JSON.stringify(getIdentity(), null, 2));
+    return;
+  }
+  console.log(`${name}@${version}`);
 }
 
 if (isNode) {
-  const { fileURLToPath } = await import("url");
+  const { fileURLToPath } = await import('url');
   if (process.argv[1] === fileURLToPath(import.meta.url)) {
-    const args = process.argv.slice(2);
-    main(args);
+    main(process.argv.slice(2));
   }
 }
