@@ -24,3 +24,5 @@ Reference material and documentation sources for this project. Grouped and canon
 
 - https://unicode.org/reports/tr29/
 - https://html.spec.whatwg.org/multipage/named-characters.html
+
+- https://tc39.es/ecma262/#sec-strings
