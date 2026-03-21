@@ -43,27 +43,23 @@
       document.getElementById('lib-name').textContent = name;
       document.getElementById('lib-version').textContent = version;
       document.getElementById('lib-description').textContent = description || '(no description)';
-      document.getElementById('demo-output').textContent = JSON.stringify({ name, version, description }, null, 2);
-
-      const examples = [
-        { title: 'slugify("Hello World!")', code: slugify('Hello World!') },
-        { title: 'truncate("Hello World", 8)', code: truncate('Hello World', 8) },
-        { title: 'camelCase("foo-bar-baz")', code: camelCase('foo-bar-baz') },
-        { title: 'kebabCase("Foo Bar Baz")', code: kebabCase('Foo Bar Baz') },
-        { title: 'titleCase("hello world from js")', code: titleCase('hello world from js') },
-        { title: 'wordWrap(long text, 20)', code: wordWrap('This is a sample sentence to demonstrate word wrap behaviour across multiple lines.', 20) },
-        { title: 'stripHtml("<p>Hello &amp; <strong>world</strong></p>")', code: stripHtml('<p>Hello &amp; <strong>world</strong></p>') },
-        { title: 'escapeRegex(". + * ? ^ $ ( ) [ ]\\")', code: escapeRegex('.+*?^$()[]\\') },
-        { title: 'pluralize("box")', code: pluralize('box') },
-        { title: 'levenshtein("kitten","sitting")', code: levenshtein('kitten','sitting') }
-      ];
-
-      const container = document.getElementById('examples');
-      for (const ex of examples) {
-        const el = document.createElement('div'); el.className = 'example';
-        el.innerHTML = `<h3>${ex.title}</h3><pre>${String(ex.code)}</pre>`;
-        container.appendChild(el);
-      }
+      const demo = {
+        identity: { name, version, description },
+        examples: {
+          slugify: (await import('./lib.js')).slugify('Hello World!'),
+          truncate: (await import('./lib.js')).truncate('Hello World', 8),
+          camelCase: (await import('./lib.js')).camelCase('foo-bar-baz'),
+          kebabCase: (await import('./lib.js')).kebabCase('Foo Bar Baz'),
+          titleCase: (await import('./lib.js')).titleCase('foo bar baz'),
+          wordWrap: (await import('./lib.js')).wordWrap('This is a long sentence that should be wrapped around a width of 20 characters for demonstration.', 20),
+          stripHtml: (await import('./lib.js')).stripHtml('<p>Hello &amp; <strong>world</strong></p>'),
+          escapeRegex: (await import('./lib.js')).escapeRegex('hello.*+?^${}()|[]\\'),
+          pluralize: (await import('./lib.js')).pluralize('box'),
+          levenshtein: (await import('./lib.js')).levenshtein('kitten','sitting')
+        }
+      };
+      document.getElementById('demo-output').textContent = JSON.stringify(demo, null, 2);
+      document.title = name + ' v' + version;
     } catch (e) {
       document.getElementById('lib-version').textContent = '(error)';
       document.getElementById('lib-description').textContent = e.message;

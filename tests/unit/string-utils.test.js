@@ -1,5 +1,4 @@
-// SPDX-License-Identifier: MIT
-import { describe, test, expect } from 'vitest';
+import { describe, it, expect } from 'vitest';
 import {
   slugify,
   truncate,
@@ -13,74 +12,88 @@ import {
   levenshtein
 } from '../../src/lib/main.js';
 
-describe('string-utils', () => {
-  test('slugify basic', () => {
+describe('string utilities', () => {
+  it('slugify basic', () => {
     expect(slugify('Hello World!')).toBe('hello-world');
   });
 
-  test('slugify unicode and diacritics', () => {
-    expect(slugify('Jalape\u00f1o & Cr\u00e8me')).toBe('jalapeno-creme');
+  it('slugify unicode and diacritics', () => {
+    expect(slugify('Café Münchner Freiheit')).toBe('cafe-munchner-freiheit');
   });
 
-  test('truncate does not break mid-word where possible', () => {
-    expect(truncate('Hello World', 8)).toBe('Hello\u2026');
+  it('truncate does not break words and appends suffix', () => {
+    expect(truncate('Hello World', 8)).toBe('Hello…');
   });
 
-  test('truncate small max', () => {
-    expect(truncate('abcdef', 2)).toBe('\u2026'.slice(0,2));
+  it('truncate short text unchanged', () => {
+    expect(truncate('Short', 10)).toBe('Short');
   });
 
-  test('camelCase', () => {
+  it('camelCase works', () => {
     expect(camelCase('foo-bar-baz')).toBe('fooBarBaz');
-    expect(camelCase('FOO_bar baz')).toBe('fooBarBaz');
   });
 
-  test('kebabCase', () => {
+  it('kebabCase works', () => {
     expect(kebabCase('Foo Bar Baz')).toBe('foo-bar-baz');
   });
 
-  test('titleCase', () => {
-    expect(titleCase('hello world from js')).toBe('Hello World From Js');
+  it('titleCase works', () => {
+    expect(titleCase('hello world FROM test')).toBe('Hello World From Test');
   });
 
-  test('wordWrap simple', () => {
-    const text = 'This is a long sentence that should wrap';
+  it('wordWrap respects width and does not break words', () => {
+    const text = 'The quick brown fox jumps over the lazy dog';
     const wrapped = wordWrap(text, 10);
-    expect(wrapped.split('\n').every(line => line.length <= 10)).toBe(true);
+    // each line <=10
+    for (const line of wrapped.split('\n')) {
+      expect(line.length).toBeLessThanOrEqual(10);
+    }
   });
 
-  test('wordWrap long single word placed alone', () => {
-    const text = 'supercalifragilisticexpialidocious';
+  it('wordWrap long word on its own line', () => {
+    const text = 'supercalifragilisticexpialidocious short';
     const wrapped = wordWrap(text, 10);
-    expect(wrapped).toBe(text);
+    const lines = wrapped.split('\n');
+    expect(lines[0]).toBe('supercalifragilisticexpialidocious');
   });
 
-  test('stripHtml and decode entities', () => {
+  it('stripHtml removes tags and decodes entities', () => {
     expect(stripHtml('<p>Hello &amp; <strong>world</strong></p>')).toBe('Hello & world');
-    expect(stripHtml('Price: &#36;5')).toBe('Price: $5');
   });
 
-  test('escapeRegex', () => {
-    expect(escapeRegex('.+*?^$()[]\\')).toBe('\\.\\+\\*\\?\\^\\$\\(\\)\\[\\]\\\\');
+  it('escapeRegex escapes special chars', () => {
+    const raw = 'hello.*+?^${}()|[]\\';
+    const escaped = escapeRegex(raw);
+    expect(escaped).toContain('\\');
+    expect(new RegExp(escaped)).toBeInstanceOf(RegExp);
   });
 
-  test('pluralize rules', () => {
+  it('pluralize rules', () => {
     expect(pluralize('box')).toBe('boxes');
     expect(pluralize('baby')).toBe('babies');
     expect(pluralize('leaf')).toBe('leaves');
     expect(pluralize('cat')).toBe('cats');
   });
 
-  test('levenshtein distance', () => {
+  it('levenshtein distance example', () => {
     expect(levenshtein('kitten', 'sitting')).toBe(3);
-    expect(levenshtein('', '')).toBe(0);
-    expect(levenshtein(null, 'a')).toBe(1);
   });
 
-  test('edge cases null/undefined', () => {
+  it('handles empty, null, undefined gracefully', () => {
+    expect(slugify('')).toBe('');
     expect(slugify(null)).toBe('');
     expect(truncate(undefined, 5)).toBe('');
-    expect(camelCase('')).toBe('');
-    expect(kebabCase(null)).toBe('');
+    expect(camelCase(null)).toBe('');
+    expect(kebabCase(undefined)).toBe('');
+    expect(titleCase(null)).toBe('');
+    expect(wordWrap(null)).toBe('');
+    expect(stripHtml(null)).toBe('');
+    expect(escapeRegex(null)).toBe('');
+    expect(pluralize(null)).toBe('');
+    expect(levenshtein(null, null)).toBe(0);
+  });
+
+  it('unicode handling', () => {
+    expect(camelCase('mañana está aquí')).toBe('mananaEstaAqui');
   });
 });

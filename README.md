@@ -1,45 +1,45 @@
 # repo
 
-A small JavaScript string utilities library used by the agentic-lib mission.
+This repository is a small string utilities library demonstrating a set of handy string functions and a tiny demo website.
 
-## Installation
+## String utilities
 
-This repository is a template; see package.json for scripts. The library entry point is src/lib/main.js and it exports a set of string utility functions.
+Exports (from `src/lib/main.js`):
 
-## API
+- slugify(input)
+- truncate(input, maxLength = 80, suffix = '…')
+- camelCase(input)
+- kebabCase(input)
+- titleCase(input)
+- wordWrap(input, width = 80)
+- stripHtml(input)
+- escapeRegex(input)
+- pluralize(input)
+- levenshtein(a, b)
 
-Named exports (from src/lib/main.js):
-- slugify(input) — Convert text to a URL-friendly slug (lowercase, hyphens, strip non-alphanumeric). Example: slugify("Hello World!") -> "hello-world"
-- truncate(input, maxLength = 100, suffix = "…") — Truncate text without breaking words where possible. Example: truncate("Hello World", 8) -> "Hello…"
-- camelCase(input) — Convert to camelCase. Example: camelCase("foo-bar-baz") -> "fooBarBaz"
-- kebabCase(input) — Convert to kebab-case. Example: kebabCase("Foo Bar Baz") -> "foo-bar-baz"
-- titleCase(input) — Capitalise the first letter of each word. Example: titleCase("hello world") -> "Hello World"
-- wordWrap(input, width = 80) — Soft-wrap text at word boundaries using "\n". Example: wordWrap("Long text here", 20)
-- stripHtml(input) — Remove HTML tags and decode common entities. Example: stripHtml("<p>Hello &amp; world</p>") -> "Hello & world"
-- escapeRegex(input) — Escape special regex characters. Example: escapeRegex(".+*") -> "\\.\\+\\*"
-- pluralize(input) — Basic English pluralisation. Example: pluralize("box") -> "boxes"
-- levenshtein(a, b) — Compute Levenshtein edit distance between two strings. Example: levenshtein("kitten", "sitting") -> 3
+All functions accept null/undefined and return an empty string (or 0 for levenshtein when both are empty).
 
-## Usage
-
-Import the functions from the library:
+Examples
 
 ```js
-import { slugify, truncate, camelCase } from './src/lib/main.js';
+import { slugify, truncate, camelCase, kebabCase, titleCase, wordWrap, stripHtml, escapeRegex, pluralize, levenshtein } from './src/lib/main.js';
 
-console.log(slugify('Hello World!'));
-console.log(truncate('Hello World', 8));
-console.log(camelCase('foo-bar-baz'));
+console.log(slugify('Hello World!')); // 'hello-world'
+console.log(truncate('Hello World', 8)); // 'Hello…'
+console.log(camelCase('foo-bar-baz')); // 'fooBarBaz'
+console.log(kebabCase('Foo Bar Baz')); // 'foo-bar-baz'
+console.log(titleCase('hello world FROM test')); // 'Hello World From Test'
+console.log(wordWrap('A long text ...', 20)); // lines separated by '\n'
+console.log(stripHtml('<p>Hello &amp; <strong>world</strong></p>')); // 'Hello & world'
+console.log(escapeRegex('hello.*+?^${}()|[]\\')); // escaped string
+console.log(pluralize('box')); // 'boxes'
+console.log(levenshtein('kitten','sitting')); // 3
 ```
 
-## Website
+Website
 
-The website at src/web/index.html imports src/web/lib.js which re-exports the library and demonstrates examples of each function.
+Open `src/web/index.html` in a browser — it demonstrates the functions using the browser-safe re-export in `src/web/lib.js`.
 
-## Tests
+Tests
 
-Unit tests are under tests/unit/. Run them with:
-
-```bash
-npm test
-```
+Run `npm test` to execute unit tests.
