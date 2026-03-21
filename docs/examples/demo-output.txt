@@ -1,0 +1,10 @@
+slugify: hello-world
+truncate: Hello…
+camelCase: fooBarBaz
+kebabCase: foo-bar-baz
+titleCase: Hello World From Library
+wordWrap: This is an example of word wrapping
+stripHtml: Hello & world
+escapeRegex: Hello.*+?^${}()|[]\\world
+pluralize: babies
+levenshtein: 3
