@@ -2,14 +2,14 @@
 
 Summary
 
-Implement the library's public API: ten named functions, exported from src/lib/main.js. Each function must be a separately exported, well-documented, zero-dependency utility and must follow the behaviour described below.
+Implement the library's public API: ten named functions exported from src/lib/main.js. Each function is a separately exported, well-documented, zero-dependency utility and must follow the behaviour described below.
 
 Specification
 
 1. slugify(input)
    - Convert input to a URL-friendly slug: convert to string, trim, convert to lowercase, replace any run of whitespace or punctuation with a single hyphen, remove characters that are not letters, numbers or hyphen, collapse multiple hyphens, remove leading/trailing hyphens.
    - Accept null/undefined and return empty string.
-   - Examples: slugify("Hello World!") => "hello-world"; slugify("") => "".
+   - Example: slugify("Hello World!") => "hello-world".
 
 2. truncate(input, length, suffix = "…")
    - If input is null/undefined return empty string.
@@ -48,12 +48,19 @@ Specification
    - Return the Levenshtein edit distance between strings a and b. Treat null/undefined as empty string. Operate on Unicode code points to avoid splitting surrogate pairs.
    - Example: levenshtein("kitten", "sitting") => 3.
 
-Acceptance criteria
+Acceptance criteria (testable)
 
-- All ten functions are exported as named functions from src/lib/main.js.
-- slugify("Hello World!") => "hello-world".
-- truncate("Hello World", 8) => "Hello…".
-- camelCase("foo-bar-baz") => "fooBarBaz".
-- levenshtein("kitten", "sitting") => 3.
-- Functions handle null/undefined by returning empty string where appropriate and preserve Unicode characters.
-- No external runtime dependencies are introduced.
+- Exports: All ten functions are exported as named exports from src/lib/main.js and importable by consuming code.
+- Behavioural tests:
+  - slugify("Hello World!") === "hello-world".
+  - truncate("Hello World", 8) === "Hello…".
+  - camelCase("foo-bar-baz") === "fooBarBaz".
+  - kebabCase("Hello World") === "hello-world".
+  - titleCase("hello world") === "Hello World".
+  - wordWrap("a b c", 1) === "a\nb\nc".
+  - stripHtml("<b>Bold &amp; Brave</b>") === "Bold & Brave".
+  - escapeRegex("a+b(c)") === "a\\+b\\(c\\)".
+  - pluralize("box") === "boxes"; pluralize("party") === "parties"; pluralize("leaf") === "leaves".
+  - levenshtein("kitten", "sitting") === 3.
+- Edge cases: Passing null or undefined to string-producing functions returns empty string and does not throw; Unicode characters (accents, emoji) are preserved and handled consistently.
+- No external runtime dependencies introduced.

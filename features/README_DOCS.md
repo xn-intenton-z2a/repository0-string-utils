@@ -6,7 +6,7 @@ Provide concise usage documentation and examples for each exported function so c
 
 Documentation requirements
 
-- Add a Usage section to repository README.md demonstrating importing the named functions from src/lib/main.js and showing one example for each function, with exact expected outputs.
+- Add or update a Usage section in repository README.md demonstrating importing the named functions from src/lib/main.js and showing one example for each function with exact expected outputs.
 
 - For each function include:
   - One-line description
@@ -26,7 +26,8 @@ Required examples (exact outputs)
 - pluralize("box") => "boxes"
 - levenshtein("kitten","sitting") => 3
 
-Acceptance criteria
+Acceptance criteria (testable)
 
-- README.md contains a Usage section with the examples above and notes on null/undefined handling and Unicode.
-- Examples use exact expected outputs so unit tests and documentation stay aligned.
+- README.md contains a Usage section with the exact examples above.
+- Each example in README matches the unit test expectations exactly (so tests can depend on documented outputs).
+- README includes a short note that null/undefined inputs result in empty strings for string-producing functions and that Unicode is supported.
