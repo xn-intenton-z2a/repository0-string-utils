@@ -7,7 +7,6 @@
 
 [schedule]
 supervisor = "hourly"       # off | weekly | daily | hourly | continuous
-model = "gpt-5-mini"
 focus = "mission"                 # mission | maintenance
 
 [paths]
@@ -185,8 +184,8 @@ total = 8
 8 = { text = "README documents all functions with examples", met = false }
 
 [init]
-timestamp = "2026-03-21T10:06:50.561Z"
+timestamp = "2026-03-21T10:28:35.235Z"
 mode = "purge"
 mission = "5-kyu-apply-string-utils"
 mission-type = "5-kyu-apply-string-utils"
-version = "7.4.34"
+version = "7.4.35"
