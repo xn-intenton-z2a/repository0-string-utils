@@ -32,5 +32,5 @@ The library must provide these 10 string operations, exported as named functions
 - [x] camelCase of `"foo-bar-baz"` produces `"fooBarBaz"`
 - [x] Levenshtein distance between `"kitten"` and `"sitting"` is `3`
 - [x] Edge cases (empty string, null, Unicode) handled gracefully
-- [ ] All unit tests pass
-- [ ] README documents all functions with examples
+- [x] All unit tests pass
+- [x] README documents all functions with examples
