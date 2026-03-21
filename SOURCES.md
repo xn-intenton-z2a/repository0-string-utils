@@ -22,4 +22,5 @@ Reference material and documentation sources for this project. Grouped and canon
 - https://en.wikipedia.org/wiki/Levenshtein_distance
 - https://en.wikipedia.org/wiki/English_plural
 
-The maintain-library workflow will process these into `library/` documents.
+- https://unicode.org/reports/tr29/
+- https://html.spec.whatwg.org/multipage/named-characters.html
