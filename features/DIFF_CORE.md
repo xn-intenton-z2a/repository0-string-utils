@@ -17,6 +17,7 @@ Acceptance criteria
 - enum value additions and removals produce enum-value-added or enum-value-removed records.
 - description modifications produce description-changed records.
 - Nested differences are represented by nested-changed records whose children are valid change records.
+- computeDiff annotates each change record with a classification property named classification whose value is one of breaking, compatible, or informational (see CLASSIFICATION).
 - Unit tests exist covering each change type in tests/unit/diff-core.test.js.
 
 Notes

@@ -18,6 +18,7 @@ Tests to include
 Acceptance criteria
 - Tests live in tests/unit and are runnable by npm test.
 - Tests assert exact changeType and path values and validate classification and formatter output.
+- Unit tests assert that each change record includes a classification field and that its value matches expected classification for representative cases.
 - All tests pass in CI when the feature is implemented.
 
 Notes

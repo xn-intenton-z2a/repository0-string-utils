@@ -17,7 +17,7 @@ Classification rules
 
 Acceptance criteria
 - classifyChange is exported from src/lib/main.js and returns one of breaking, compatible, informational.
-- computeDiff integrates classification so each change record can be annotated with its classification.
+- computeDiff integrates classification so each change record is annotated with a classification property whose value is one of breaking, compatible, or informational.
 - Unit tests verify classification for removed required property (must be breaking) and other representative cases.
 
 Notes
