@@ -44,5 +44,5 @@ Supported `changeType` values:
 - [x] Resolves local `$ref` before diffing
 - [x] Classifying a removed required property returns `"breaking"`
 - [x] Formatting changes produces readable text output
-- [ ] All unit tests pass
-- [ ] README documents usage with examples
+- [x] All unit tests pass
+- [x] README documents usage with examples
