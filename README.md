@@ -110,51 +110,9 @@ MISSION.md -> [supervisor] -> dispatch workflows -> Issue -> Code -> Test -> PR 
 
 The pipeline runs as GitHub Actions workflows. An LLM supervisor gathers repository context and dispatches other workflows. Each workflow uses the Copilot SDK to make targeted changes.
 
-## Configuration
-
-Edit `agentic-lib.toml` to tune the system:
-
-```toml
-[schedule]
-supervisor = "off"          # off | weekly | daily | hourly | continuous
-focus = "mission"           # mission | maintenance
-
-[tuning]
-profile = "max"             # min | med | max
-model = "gpt-5-mini"       # gpt-5-mini | claude-sonnet-4 | gpt-4.1
-
-[mission-complete]
-acceptance-criteria-threshold = 50   # % of criteria that must be met
-min-resolved-issues = 1              # minimum closed issues
-```
-
-## File Layout
-
-```
-src/lib/main.js              <- library (browser-safe)
-src/web/index.html            <- web page (imports ./lib.js)
-tests/unit/main.test.js       <- unit tests
-tests/behaviour/              <- Playwright E2E
-docs/                         <- build output for GitHub Pages
-```
-
-## Updating
-
-The `init` workflow updates the agentic infrastructure automatically. To update manually:
-
-```bash
-npx @xn-intenton-z2a/agentic-lib@latest init --purge
-```
-
-## Links
-
-- [MISSION.md](MISSION.md) — your project goals
-- [agentic-lib documentation](https://github.com/xn-intenton-z2a/agentic-lib) — full SDK docs
-- [intenti&ouml;n website](https://xn--intenton-z2a.com)
-
 ## JSON Schema diff example
 
-This project now includes a small JSON Schema diff library that compares two Draft-07 schemas and returns a structured list of change records. The API is exported from `src/lib/main.js` as named exports:
+This project includes a small JSON Schema diff library that compares two Draft-07 schemas and returns a structured list of change records. The API is exported from `src/lib/main.js` as named exports:
 
 - `diffSchemas(base, head)` — returns an array of change records
 - `formatChanges(changes, opts)` — returns a human-friendly text or JSON rendering
@@ -189,5 +147,44 @@ const changes = diffSchemas(before, after);
 console.log(formatChanges(changes, { format: 'text' }));
 ```
 
-The web demo at `src/web/index.html` also shows a working example in the browser and is updated to demonstrate nested changes, `$ref` resolution, and formatted output.
+Example output (text):
+
+```
+~ type changed: /properties/id  integer -> string
+- required: email (at /required)
+* nested changes at /properties/tags:
+  ~ type changed: /properties/tags/items  string -> number
++ property added: /properties/active
+    schema: {"type":"boolean"}
+```
+
+Example output (JSON):
+
+```json
+[
+  {
+    "path": "/required",
+    "changeType": "required-removed",
+    "property": "email",
+    "before": ["id","email"],
+    "after": ["id"],
+    "classification": "breaking"
+  },
+  {
+    "path": "/properties/id",
+    "changeType": "type-changed",
+    "before": "integer",
+    "after": "string",
+    "classification": "breaking"
+  },
+  {
+    "path": "/properties/active",
+    "changeType": "property-added",
+    "after": { "type": "boolean" },
+    "classification": "compatible"
+  }
+]
+```
+
+The web demo at `src/web/index.html` shows a working example in the browser and is updated to demonstrate nested changes, `$ref` resolution, and formatted output.
 
