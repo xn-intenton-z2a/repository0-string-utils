@@ -36,13 +36,13 @@ Supported `changeType` values:
 
 ## Acceptance Criteria
 
-- [ ] Diffing two schemas returns an array of change objects
-- [ ] Detects added and removed properties
-- [ ] Detects type changes (e.g. `"string"` → `"number"`)
-- [ ] Detects `required` array changes
-- [ ] Handles nested schemas recursively (properties within properties)
-- [ ] Resolves local `$ref` before diffing
-- [ ] Classifying a removed required property returns `"breaking"`
-- [ ] Formatting changes produces readable text output
+- [x] Diffing two schemas returns an array of change objects
+- [x] Detects added and removed properties
+- [x] Detects type changes (e.g. `"string"` → `"number"`)
+- [x] Detects `required` array changes
+- [x] Handles nested schemas recursively (properties within properties)
+- [x] Resolves local `$ref` before diffing
+- [x] Classifying a removed required property returns `"breaking"`
+- [x] Formatting changes produces readable text output
 - [ ] All unit tests pass
 - [ ] README documents usage with examples
