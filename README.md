@@ -110,81 +110,44 @@ MISSION.md -> [supervisor] -> dispatch workflows -> Issue -> Code -> Test -> PR 
 
 The pipeline runs as GitHub Actions workflows. An LLM supervisor gathers repository context and dispatches other workflows. Each workflow uses the Copilot SDK to make targeted changes.
 
-## JSON Schema diff example
+## Configuration
 
-This project includes a small JSON Schema diff library that compares two Draft-07 schemas and returns a structured list of change records. The API is exported from `src/lib/main.js` as named exports:
+Edit `agentic-lib.toml` to tune the system:
 
-- `diffSchemas(base, head)` — returns an array of change records
-- `formatChanges(changes, opts)` — returns a human-friendly text or JSON rendering
-- `classifyChange(change)` — classifies a single change as `"breaking"`, `"compatible"`, or `"informational"`
-- `resolveLocalRefs(schema)` — resolves local `"$ref"` pointers inside a schema (throws on remote refs)
+```toml
+[schedule]
+supervisor = "off"          # off | weekly | daily | hourly | continuous
+focus = "mission"           # mission | maintenance
 
-Quick example (Node):
+[tuning]
+profile = "max"             # min | med | max
+model = "gpt-5-mini"       # gpt-5-mini | claude-sonnet-4 | gpt-4.1
 
-```js
-import { diffSchemas, formatChanges } from './src/lib/main.js';
-
-const before = {
-  type: 'object',
-  properties: {
-    id: { type: 'integer' },
-    email: { type: 'string' }
-  },
-  required: ['id', 'email']
-};
-
-const after = {
-  type: 'object',
-  properties: {
-    id: { type: 'string' }, // type changed
-    email: { type: 'string' },
-    active: { type: 'boolean' } // added
-  },
-  required: ['id'] // email removed from required
-};
-
-const changes = diffSchemas(before, after);
-console.log(formatChanges(changes, { format: 'text' }));
+[mission-complete]
+acceptance-criteria-threshold = 50   # % of criteria that must be met
+min-resolved-issues = 1              # minimum closed issues
 ```
 
-Example output (text):
+## File Layout
 
 ```
-~ type changed: /properties/id  integer -> string
-- required: email (at /required)
-* nested changes at /properties/tags:
-  ~ type changed: /properties/tags/items  string -> number
-+ property added: /properties/active
-    schema: {"type":"boolean"}
+src/lib/main.js              <- library (browser-safe)
+src/web/index.html            <- web page (imports ./lib.js)
+tests/unit/main.test.js       <- unit tests
+tests/behaviour/              <- Playwright E2E
+docs/                         <- build output for GitHub Pages
 ```
 
-Example output (JSON):
+## Updating
 
-```json
-[
-  {
-    "path": "/required",
-    "changeType": "required-removed",
-    "property": "email",
-    "before": ["id","email"],
-    "after": ["id"],
-    "classification": "breaking"
-  },
-  {
-    "path": "/properties/id",
-    "changeType": "type-changed",
-    "before": "integer",
-    "after": "string",
-    "classification": "breaking"
-  },
-  {
-    "path": "/properties/active",
-    "changeType": "property-added",
-    "after": { "type": "boolean" },
-    "classification": "compatible"
-  }
-]
+The `init` workflow updates the agentic infrastructure automatically. To update manually:
+
+```bash
+npx @xn-intenton-z2a/agentic-lib@latest init --purge
 ```
 
-The web demo at `src/web/index.html` shows a working example in the browser and is updated to demonstrate nested changes, `$ref` resolution, and formatted output.
+## Links
 
+- [MISSION.md](MISSION.md) — your project goals
+- [agentic-lib documentation](https://github.com/xn-intenton-z2a/agentic-lib) — full SDK docs
+- [intenti&ouml;n website](https://xn--intenton-z2a.com)

@@ -1,48 +1,36 @@
 # Mission
 
-A JavaScript library that computes structured diffs between two JSON Schema (Draft-07) documents, helping API developers track and validate schema changes across versions.
+A JavaScript library of string utility functions. This is a bag-of-functions problem — each function is independent.
 
 ## Required Capabilities
 
-- Compare two JSON Schema objects and return an array of change records.
-- Render changes as human-readable text or JSON.
-- Classify each change as `"breaking"`, `"compatible"`, or `"informational"`.
+The library must provide these 10 string operations, exported as named functions from `src/lib/main.js`:
 
-## Change Record Format
-
-Each change is a plain object with these fields:
-
-```js
-{ path: "/properties/email", changeType: "type-changed", before: "string", after: "number" }
-```
-
-Supported `changeType` values:
-
-- `property-added` / `property-removed`
-- `type-changed`
-- `required-added` / `required-removed`
-- `enum-value-added` / `enum-value-removed`
-- `description-changed`
-- `nested-changed` (recursive diff of sub-schemas)
+- **Slugify** — convert to URL-friendly slug (lowercase, hyphens, strip non-alphanumeric)
+- **Truncate** — truncate with suffix (default "…"), don't break mid-word
+- **camelCase** — convert to camelCase
+- **kebabCase** — convert to kebab-case
+- **titleCase** — capitalise first letter of each word
+- **wordWrap** — soft wrap text at word boundaries. Never break a word. If a single word exceeds `width`, place it on its own line unbroken. Line separator is `\n`.
+- **stripHtml** — remove HTML tags, decode common entities
+- **escapeRegex** — escape special regex characters
+- **Pluralize** — basic English pluralisation. Rules: words ending in s/x/z/ch/sh add "es"; consonant+"y" changes to "ies"; "f"/"fe" changes to "ves"; all others add "s". Irregular plurals (mouse/mice, child/children) are out of scope.
+- **Levenshtein distance** — compute edit distance between two strings
 
 ## Requirements
 
-- Resolve local `$ref` pointers (JSON Pointer within the same document) before diffing. Remote `$ref` is out of scope — throw if encountered.
-- Traverse `properties`, `items`, `allOf`, `oneOf`, `anyOf` recursively.
-- Export all public API as named exports from `src/lib/main.js`.
+- Handle edge cases: empty strings, null/undefined (return empty string), Unicode characters.
 - No external runtime dependencies.
-- Comprehensive unit tests covering each change type, nested schemas, and `$ref` resolution.
-- README with usage examples showing a before/after schema pair.
+- Comprehensive unit tests for each function including edge cases.
+- README with usage examples for each function.
 
 ## Acceptance Criteria
 
-- [x] Diffing two schemas returns an array of change objects
-- [x] Detects added and removed properties
-- [x] Detects type changes (e.g. `"string"` → `"number"`)
-- [x] Detects `required` array changes
-- [x] Handles nested schemas recursively (properties within properties)
-- [x] Resolves local `$ref` before diffing
-- [x] Classifying a removed required property returns `"breaking"`
-- [x] Formatting changes produces readable text output
-- [x] All unit tests pass
-- [x] README documents usage with examples
+- [ ] All 10 functions are exported and work correctly
+- [ ] Slugifying `"Hello World!"` produces `"hello-world"`
+- [ ] Truncating `"Hello World"` to length 8 produces `"Hello…"`
+- [ ] camelCase of `"foo-bar-baz"` produces `"fooBarBaz"`
+- [ ] Levenshtein distance between `"kitten"` and `"sitting"` is `3`
+- [ ] Edge cases (empty string, null, Unicode) handled gracefully
+- [ ] All unit tests pass
+- [ ] README documents all functions with examples
