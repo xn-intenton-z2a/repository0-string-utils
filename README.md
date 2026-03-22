@@ -151,3 +151,43 @@ npx @xn-intenton-z2a/agentic-lib@latest init --purge
 - [MISSION.md](MISSION.md) — your project goals
 - [agentic-lib documentation](https://github.com/xn-intenton-z2a/agentic-lib) — full SDK docs
 - [intenti&ouml;n website](https://xn--intenton-z2a.com)
+
+## JSON Schema diff example
+
+This project now includes a small JSON Schema diff library that compares two Draft-07 schemas and returns a structured list of change records. The API is exported from `src/lib/main.js` as named exports:
+
+- `diffSchemas(base, head)` — returns an array of change records
+- `formatChanges(changes, opts)` — returns a human-friendly text or JSON rendering
+- `classifyChange(change)` — classifies a single change as `"breaking"`, `"compatible"`, or `"informational"`
+- `resolveLocalRefs(schema)` — resolves local `"$ref"` pointers inside a schema (throws on remote refs)
+
+Quick example (Node):
+
+```js
+import { diffSchemas, formatChanges } from './src/lib/main.js';
+
+const before = {
+  type: 'object',
+  properties: {
+    id: { type: 'integer' },
+    email: { type: 'string' }
+  },
+  required: ['id', 'email']
+};
+
+const after = {
+  type: 'object',
+  properties: {
+    id: { type: 'string' }, // type changed
+    email: { type: 'string' },
+    active: { type: 'boolean' } // added
+  },
+  required: ['id'] // email removed from required
+};
+
+const changes = diffSchemas(before, after);
+console.log(formatChanges(changes, { format: 'text' }));
+```
+
+The web demo at `src/web/index.html` also shows a working example in the browser and is updated to demonstrate nested changes, `$ref` resolution, and formatted output.
+
