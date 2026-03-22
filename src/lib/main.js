@@ -212,16 +212,42 @@ export function diffSchemas(baseSchema, headSchema) {
       const bItems = baseNode?.items;
       const hItems = headNode?.items;
       const itemsPath = pathJoin(path, "items");
-      if (bItems && !hItems) {
-        changes.push({ path: itemsPath, changeType: "property-removed", before: deepClone(bItems), after: undefined });
-      } else if (!bItems && hItems) {
-        changes.push({ path: itemsPath, changeType: "property-added", before: undefined, after: deepClone(hItems) });
-      } else if (bItems && hItems) {
-        const itemChanges = diffObject(bItems, hItems, itemsPath);
-        if (itemChanges.length === 1 && itemChanges[0].path === itemsPath && itemChanges[0].changeType === "type-changed") {
-          changes.push(itemChanges[0]);
-        } else if (itemChanges.length > 0) {
-          changes.push({ path: itemsPath, changeType: "nested-changed", changes: itemChanges });
+
+      // Tuple-style: items is an array of schemas
+      if (Array.isArray(bItems) || Array.isArray(hItems)) {
+        const bArr = Array.isArray(bItems) ? bItems : [];
+        const hArr = Array.isArray(hItems) ? hItems : [];
+        const max = Math.max(bArr.length, hArr.length);
+        for (let i = 0; i < max; i++) {
+          const bi = bArr[i];
+          const hi = hArr[i];
+          const idxPath = pathJoin(itemsPath, String(i));
+          if (bi && !hi) {
+            changes.push({ path: idxPath, changeType: "property-removed", before: deepClone(bi), after: undefined });
+          } else if (!bi && hi) {
+            changes.push({ path: idxPath, changeType: "property-added", before: undefined, after: deepClone(hi) });
+          } else if (bi && hi) {
+            const cChanges = diffObject(bi, hi, idxPath);
+            if (cChanges.length === 1 && cChanges[0].path === idxPath && cChanges[0].changeType === "type-changed") {
+              changes.push(cChanges[0]);
+            } else if (cChanges.length > 0) {
+              changes.push({ path: idxPath, changeType: "nested-changed", changes: cChanges });
+            }
+          }
+        }
+      } else {
+        // Single-schema items
+        if (bItems && !hItems) {
+          changes.push({ path: itemsPath, changeType: "property-removed", before: deepClone(bItems), after: undefined });
+        } else if (!bItems && hItems) {
+          changes.push({ path: itemsPath, changeType: "property-added", before: undefined, after: deepClone(hItems) });
+        } else if (bItems && hItems) {
+          const itemChanges = diffObject(bItems, hItems, itemsPath);
+          if (itemChanges.length === 1 && itemChanges[0].path === itemsPath && itemChanges[0].changeType === "type-changed") {
+            changes.push(itemChanges[0]);
+          } else if (itemChanges.length > 0) {
+            changes.push({ path: itemsPath, changeType: "nested-changed", changes: itemChanges });
+          }
         }
       }
     }

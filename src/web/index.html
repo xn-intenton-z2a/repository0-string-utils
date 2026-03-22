@@ -40,7 +40,7 @@
   <script type="module">
     try {
       const lib = await import('./lib.js');
-      const { name, version, description, diffSchemas, formatChanges } = lib;
+      const { name, version, description, diffSchemas, formatChanges, classifyChange } = lib;
       document.getElementById('lib-name').textContent = name;
       document.getElementById('lib-version').textContent = version;
       document.getElementById('lib-description').textContent = description || '(no description)';
@@ -70,9 +70,22 @@
       };
 
       const changes = diffSchemas(before, after);
-      document.getElementById('demo-output').textContent = JSON.stringify({ name, version, changes }, null, 2);
+
+      // annotate changes with classification recursively
+      function annotate(change) {
+        const c = Array.isArray(change) ? change.map(annotate) : { ...change };
+        if (Array.isArray(change)) return c;
+        c.classification = classifyChange(change);
+        if (Array.isArray(change.changes)) {
+          c.changes = change.changes.map(annotate);
+        }
+        return c;
+      }
+
+      const classified = changes.map(annotate);
+      document.getElementById('demo-output').textContent = JSON.stringify({ name, version, changes: classified }, null, 2);
       document.getElementById('demo-text').textContent = formatChanges(changes, { format: 'text' });
-      document.getElementById('demo-json').textContent = JSON.stringify(changes, null, 2);
+      document.getElementById('demo-json').textContent = JSON.stringify(classified, null, 2);
 
       document.title = name + ' v' + version;
     } catch (e) {
