@@ -1,15 +1,20 @@
-# FORMATTERS
+# CI_GREEN
 
 Overview
-Provide text and JSON formatters for diff results so machine and human consumers can read changes easily. Named exports: formatChangesText and formatChangesJson.
+Stabilise unit tests and CI so the mission acceptance criteria depending on passing tests and documented examples can be validated. This feature focuses on ensuring npm test passes in CI and that coverage meets repository thresholds.
 
 Behavior
-- formatChangesJson returns a stable JSON representation of the change records array suitable for programmatic consumption.
-- formatChangesText renders a compact, human readable multi-line summary where each line contains the JSON Pointer path, change type, classification, and a short before/after note when applicable.
-- Text formatting should be suitable for display in CLI output and documentation examples.
+- Investigate failing unit tests and fix issues in code or tests so that npm test (vitest) exits with success.
+- Ensure test coverage meets the repository goals (min-line-coverage: 50%, min-branch-coverage: 30%) by adding or adjusting tests where necessary.
+- Ensure the test scripts in package.json (test, test:unit) run deterministically in CI (node >=24) and that Playwright tests are gated behind test:behaviour when not required.
 
 Acceptance criteria
-- formatChangesText and formatChangesJson are exported from src/lib/main.js.
-- Given a change array, formatChangesText returns a readable string with one change per line and path and classification present.
-- formatChangesJson returns a JSON serializable data structure equivalent to the original change records.
-- Unit tests validate both formatter outputs for a representative change set.
+- All unit tests pass locally using npm test and in CI when the test workflow runs.
+- Coverage reported by vitest meets or exceeds 50% line coverage and 30% branch coverage.
+- Any test flakiness is addressed (no intermittent failures observed across three consecutive CI runs for the changed tests).
+- Open issues that tracked failing tests (for example issue #68) are referenced and closed when fixes are merged.
+
+Notes
+- Prefer small, surgical fixes to tests or library code; avoid large refactors.
+- If increasing coverage requires only additional tests, add them under tests/unit using minimal inline fixtures.
+- Keep CI changes limited to test config or timeouts; do not introduce third-party runtime dependencies.

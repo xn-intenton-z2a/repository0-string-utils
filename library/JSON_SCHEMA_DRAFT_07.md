@@ -75,3 +75,72 @@ ATTRIBUTION
 - URL: https://json-schema.org/draft-07/json-schema-validation.html
 - Retrieved: 2026-03-22
 - Bytes fetched: 90.9 KB
+
+META-SCHEMA (draft-07/schema) — NORMALISED EXTRACT
+
+Table of contents:
+- Definitions present in meta-schema: schemaArray, nonNegativeInteger, nonNegativeIntegerDefault0, simpleTypes, stringArray
+- Root type and allowed schema shapes
+- Key properties and their canonical types
+- items/tuple validation rules
+
+Definitions present in meta-schema
+- schemaArray: type array, minItems 1, items: each entry is a schema (recursive reference to "#").
+- nonNegativeInteger: integer with minimum 0.
+- nonNegativeIntegerDefault0: nonNegativeInteger with default 0.
+- simpleTypes: enum of allowed primitive type names: array, boolean, integer, null, number, object, string.
+- stringArray: array of strings, uniqueItems true, default []
+
+Root type and allowed schema shapes
+- The Draft-07 meta-schema allows a schema to be either an object or a boolean.
+- When a schema is an object, its properties are validated against the listed properties in the meta-schema; when a schema is "true" it accepts any instance, and when "false" it rejects all instances.
+
+Key properties and canonical types (excerpted)
+- $id: string, format uri-reference
+- $schema: string, format uri
+- $ref: string, format uri-reference
+- $comment: string
+- title, description: string
+- default: any
+- readOnly, writeOnly: boolean (default false)
+- examples: array
+- multipleOf, maximum, exclusiveMaximum, minimum, exclusiveMinimum: number types
+- maxLength, minLength: nonNegativeInteger / nonNegativeIntegerDefault0
+- pattern: string with format regex
+- additionalItems, additionalProperties, items, contains, propertyNames, dependencies: may reference subschemas via "$ref": "#"
+- properties, patternProperties, definitions: object mapping to subschemas (additionalProperties: schema)
+- required: stringArray
+- enum: array with minItems 1, uniqueItems true
+- type: either a simpleTypes enum value or an array of simpleTypes
+- allOf, anyOf, oneOf: schemaArray
+- not: a schema
+
+Items and tuple validation
+- items: anyOf [schema, schemaArray] where schemaArray defines positional subschemas and schema applies to all items. When items is a schema array, additionalItems controls validation for extra positions.
+
+SUPPLEMENTARY DETAILS
+
+- Use the meta-schema definitions to validate that a schema object uses keywords in expected places; e.g., properties should be an object of subschemas.
+- Rely on stringArray and simpleTypes definition to canonicalize type lists and required lists when comparing schemas.
+
+REFERENCE DETAILS
+
+Key fragments from the meta-schema:
+- "type": ["object", "boolean"]
+- "definitions": { "type": "object", "additionalProperties": { "$ref": "#" }, "default": {} }
+- "properties": { "type": "object", "additionalProperties": { "$ref": "#" }, "default": {} }
+- "required": { "$ref": "#/definitions/stringArray" }
+- "items": { "anyOf": [ { "$ref": "#" }, { "$ref": "#/definitions/schemaArray" } ], "default": true }
+
+DETAILED DIGEST
+
+Source: Draft-07 JSON Meta-Schema
+Retrieved: 2026-03-22
+Bytes fetched: 4979
+
+The Draft-07 meta-schema enumerates canonical keyword shapes and types used across the validation specification. The meta-schema is authoritative for schema shape: use it to derive exact types for keywords when producing diff change records and to validate assumptions made by the diff algorithm.
+
+ATTRIBUTION
+- URL: https://json-schema.org/draft-07/schema
+- Retrieved: 2026-03-22
+- Bytes fetched: 4979
