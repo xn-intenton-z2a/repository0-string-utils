@@ -170,19 +170,21 @@ screenshot-file = "SCREENSHOT_INDEX.png"
 
 [acceptance-criteria]
 # Auto-generated from MISSION.md on init. Updated by implementation-review.
-total = 8
-1 = { text = "All 10 functions are exported and work correctly", met = false }
-2 = { text = "Slugifying `\"Hello World!\"` produces `\"hello-world\"`", met = false }
-3 = { text = "Truncating `\"Hello World\"` to length 8 produces `\"Hello…\"`", met = false }
-4 = { text = "camelCase of `\"foo-bar-baz\"` produces `\"fooBarBaz\"`", met = false }
-5 = { text = "Levenshtein distance between `\"kitten\"` and `\"sitting\"` is `3`", met = false }
-6 = { text = "Edge cases (empty string, null, Unicode) handled gracefully", met = false }
-7 = { text = "All unit tests pass", met = false }
-8 = { text = "README documents all functions with examples", met = false }
+total = 10
+1 = { text = "Diffing two schemas returns an array of change objects", met = false }
+2 = { text = "Detects added and removed properties", met = false }
+3 = { text = "Detects type changes (e.g. `\"string\"` → `\"number\"`)", met = false }
+4 = { text = "Detects `required` array changes", met = false }
+5 = { text = "Handles nested schemas recursively (properties within properties)", met = false }
+6 = { text = "Resolves local `$ref` before diffing", met = false }
+7 = { text = "Classifying a removed required property returns `\"breaking\"`", met = false }
+8 = { text = "Formatting changes produces readable text output", met = false }
+9 = { text = "All unit tests pass", met = false }
+10 = { text = "README documents usage with examples", met = false }
 
 [init]
-timestamp = "2026-03-22T01:07:48.505Z"
+timestamp = "2026-03-22T01:13:40.745Z"
 mode = "purge"
-mission = "5-kyu-apply-string-utils"
-mission-type = "5-kyu-apply-string-utils"
+mission = "4-kyu-analyze-json-schema-diff"
+mission-type = "4-kyu-analyze-json-schema-diff"
 version = "7.4.56"
