@@ -1,36 +1,48 @@
 # Mission
 
-A JavaScript library of string utility functions. This is a bag-of-functions problem — each function is independent.
+A JavaScript library that computes structured diffs between two JSON Schema (Draft-07) documents, helping API developers track and validate schema changes across versions.
 
 ## Required Capabilities
 
-The library must provide these 10 string operations, exported as named functions from `src/lib/main.js`:
+- Compare two JSON Schema objects and return an array of change records.
+- Render changes as human-readable text or JSON.
+- Classify each change as `"breaking"`, `"compatible"`, or `"informational"`.
 
-- **Slugify** — convert to URL-friendly slug (lowercase, hyphens, strip non-alphanumeric)
-- **Truncate** — truncate with suffix (default "…"), don't break mid-word
-- **camelCase** — convert to camelCase
-- **kebabCase** — convert to kebab-case
-- **titleCase** — capitalise first letter of each word
-- **wordWrap** — soft wrap text at word boundaries. Never break a word. If a single word exceeds `width`, place it on its own line unbroken. Line separator is `\n`.
-- **stripHtml** — remove HTML tags, decode common entities
-- **escapeRegex** — escape special regex characters
-- **Pluralize** — basic English pluralisation. Rules: words ending in s/x/z/ch/sh add "es"; consonant+"y" changes to "ies"; "f"/"fe" changes to "ves"; all others add "s". Irregular plurals (mouse/mice, child/children) are out of scope.
-- **Levenshtein distance** — compute edit distance between two strings
+## Change Record Format
+
+Each change is a plain object with these fields:
+
+```js
+{ path: "/properties/email", changeType: "type-changed", before: "string", after: "number" }
+```
+
+Supported `changeType` values:
+
+- `property-added` / `property-removed`
+- `type-changed`
+- `required-added` / `required-removed`
+- `enum-value-added` / `enum-value-removed`
+- `description-changed`
+- `nested-changed` (recursive diff of sub-schemas)
 
 ## Requirements
 
-- Handle edge cases: empty strings, null/undefined (return empty string), Unicode characters.
+- Resolve local `$ref` pointers (JSON Pointer within the same document) before diffing. Remote `$ref` is out of scope — throw if encountered.
+- Traverse `properties`, `items`, `allOf`, `oneOf`, `anyOf` recursively.
+- Export all public API as named exports from `src/lib/main.js`.
 - No external runtime dependencies.
-- Comprehensive unit tests for each function including edge cases.
-- README with usage examples for each function.
+- Comprehensive unit tests covering each change type, nested schemas, and `$ref` resolution.
+- README with usage examples showing a before/after schema pair.
 
 ## Acceptance Criteria
 
-- [ ] All 10 functions are exported and work correctly
-- [ ] Slugifying `"Hello World!"` produces `"hello-world"`
-- [ ] Truncating `"Hello World"` to length 8 produces `"Hello…"`
-- [ ] camelCase of `"foo-bar-baz"` produces `"fooBarBaz"`
-- [ ] Levenshtein distance between `"kitten"` and `"sitting"` is `3`
-- [ ] Edge cases (empty string, null, Unicode) handled gracefully
+- [ ] Diffing two schemas returns an array of change objects
+- [ ] Detects added and removed properties
+- [ ] Detects type changes (e.g. `"string"` → `"number"`)
+- [ ] Detects `required` array changes
+- [ ] Handles nested schemas recursively (properties within properties)
+- [ ] Resolves local `$ref` before diffing
+- [ ] Classifying a removed required property returns `"breaking"`
+- [ ] Formatting changes produces readable text output
 - [ ] All unit tests pass
-- [ ] README documents all functions with examples
+- [ ] README documents usage with examples
