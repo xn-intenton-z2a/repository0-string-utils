@@ -1,29 +1,20 @@
-# PLURALIZE
+# CHANGE_CLASSIFICATION
 
 Summary
-Implement a basic English pluralize function using a small rule set suitable for common nouns.
+Define deterministic mapping from change records to classification values breaking, compatible, and informational so classifyChange can be implemented and tested.
 
 Specification
-- pluralize(word: string): string
-  - If input is null/undefined return empty string.
-  - Rules (applied in order):
-    1. If word ends with s, x, z, ch, or sh add "es".
-    2. If word ends with a consonant followed by "y" replace "y" with "ies".
-    3. If word ends with "f" or "fe" replace with "ves".
-    4. Otherwise add "s".
-  - Irregular plurals are out of scope.
-
-Examples
-- pluralize "box" -> "boxes".
-- pluralize "baby" -> "babies".
-- pluralize "leaf" -> "leaves".
+- Baseline rules:
+  - breaking: removal of a property that was required; type changes that remove previously accepted types; removal of enum values that were previously allowed and used; changes that make previously valid instances invalid.
+  - compatible: adding a property, adding a type to an existing union, adding an enum value, or loosening constraints that do not invalidate existing instances.
+  - informational: description changes, metadata-only updates, or nested-changed records that only contain informational sub-changes.
+- Composition: for nested-changed records the parent classification is the most severe classification of its nested items (breaking > compatible > informational).
 
 Files to change
-- src/lib/main.js: add pluralize implementation
-- tests/unit/pluralize.test.js: tests for the rule examples and edge cases
-- README.md: usage example
+- src/lib/main.js: implement classifyChange(change) and use it in renderChanges and test suites.
+- tests/unit/classification.test.js: concrete cases asserting classification outcomes.
 
 Acceptance Criteria
-- pluralize("box") returns "boxes".
-- pluralize("baby") returns "babies".
-- pluralize handles null/undefined by returning empty string.
+- classifyChange reports breaking for removed required property test case.
+- classifyChange combines nested classifications by selecting the most severe classification present.
+- Unit tests include type-change examples that assert breaking vs compatible outcomes.

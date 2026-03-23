@@ -1,10 +1,13 @@
 # Sources
 
-Reference material and documentation sources for this project. These references were chosen to cover JavaScript string APIs, regular expressions, HTML entities, Unicode normalization, slugging, and Levenshtein algorithm details relevant to the mission.
+Authoritative references for the JSON Schema diff mission. These cover the Draft-07 specification, JSON Pointer, $ref resolution, object/required semantics, combining keywords (allOf/oneOf/anyOf), and an implementation guide for local references.
 
-- https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String
-- https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide/Regular_Expressions
-- https://developer.mozilla.org/en-US/docs/Glossary/Entity
-- https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String/normalize
-- https://en.wikipedia.org/wiki/Levenshtein_distance
-- https://raw.githubusercontent.com/simov/slugify/master/README.md
+- https://json-schema.org/
+- https://json-schema.org/understanding-json-schema/
+- https://json-schema.org/understanding-json-schema/structuring.html#ref
+- https://json-schema.org/understanding-json-schema/reference/object.html
+- https://json-schema.org/understanding-json-schema/reference/combining.html
+- https://json-schema.org/understanding-json-schema/reference/type.html
+- https://json-schema.org/draft-07/schema
+- https://datatracker.ietf.org/doc/html/rfc6901
+- https://ajv.js.org/guide/refs.html

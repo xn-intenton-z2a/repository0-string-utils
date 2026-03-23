@@ -1,22 +1,20 @@
-# LEVENSHTEIN
+# RECURSIVE_TRAVERSAL
 
 Summary
-Implement a Levenshtein edit distance function that returns the minimum number of single-character edits required to change one string into another.
+Describe traversal rules for schemas so diffSchemas inspects properties, items, allOf, oneOf, anyOf, and nested schemas recursively and produces stable JSON Pointer-style paths for change records.
 
 Specification
-- levenshtein(a: string, b: string): number
-  - If either input is null/undefined treat it as the empty string.
-  - Returns a non-negative integer denoting the edit distance.
-  - Unicode-aware: treat JavaScript string code points as characters (acceptable to operate on code units for this repository, but tests must include simple Unicode examples).
-
-Examples
-- levenshtein "kitten", "sitting" -> 3.
+- Traversal targets: properties, patternProperties (report literal property names), items (single-schema and tuple forms), additionalProperties when it is a schema, and composition arrays allOf, oneOf, anyOf.
+- Path format: change record path must be a slash-prefixed path using JSON Pointer style segments that reflect schema location, for example /properties/email or /allOf/1/properties/id.
+- Array indices: when traversing composition arrays use numeric segments for index positions.
+- Boolean schemas: handle boolean schema nodes (true/false) as valid nodes and report transitions between boolean and object schemas.
+- Aggregation: when multiple nested changes occur under the same parent produce either individual nested change records or a parent nested-changed record that contains the sub-records.
 
 Files to change
-- src/lib/main.js: add levenshtein implementation
-- tests/unit/levenshtein.test.js: tests for example, empty inputs, and simple Unicode cases
-- README.md: usage example and note on behaviour for null/undefined
+- src/lib/main.js: traversal utilities and stable path generation used by diffSchemas.
+- tests/unit/traversal.test.js: test cases covering properties, items, composition arrays, tuple items, patternProperties and boolean-schema transitions.
 
 Acceptance Criteria
-- levenshtein("kitten", "sitting") returns 3.
-- levenshtein handles null/undefined by treating missing inputs as empty strings and returning numeric distance.
+- diffSchemas traverses a schema with nested allOf/oneOf and reports change records with paths that include composition indices.
+- boolean-schema to object-schema transitions are reported in tests.
+- Tests include tuple items and patternProperties examples and pass after implementation.

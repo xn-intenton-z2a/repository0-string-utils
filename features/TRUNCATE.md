@@ -1,22 +1,19 @@
-# TRUNCATE
+# UNIT_TESTS
 
 Summary
-Implement truncate that shortens text without breaking words and appends a suffix when truncation occurs.
+Define the unit test coverage required for mission acceptance and list the exact test files and cases that must be present.
 
-Specification
-- Function name: truncate(input: string, maxLength: number, suffix?: string): string
-- Defaults: suffix = the single-character ellipsis "…". If input is null or undefined return empty string.
-- Behavior: If input length is less than or equal to maxLength return input unchanged. When truncation is required, prefer truncation at the last word boundary that keeps the output length (including suffix) <= maxLength. If no earlier word boundary exists (first word longer than maxLength), return the first maxLength - suffix.length characters followed by the suffix.
-
-Examples
-- truncate "Hello World" with maxLength 8 returns "Hello…".
+Test matrix
+- tests/unit/change-types.test.js: tests for property-added, property-removed, type-changed, required-added, required-removed, enum-value-added, enum-value-removed, description-changed, nested-changed.
+- tests/unit/ref-resolution.test.js: local fragment resolution, percent-encoded fragments, unresolvable pointer error, remote $ref rejection.
+- tests/unit/traversal.test.js: allOf/oneOf/anyOf, tuple items and patternProperties, boolean-schema changes.
+- tests/unit/classification.test.js: removed required property is breaking, nested aggregation rules, type change examples.
+- tests/unit/format.test.js: json and text outputs, maxLines behaviour.
+- tests/unit/api-surface.test.js: asserts named exports exist and null/undefined handling where applicable.
 
 Files to change
-- src/lib/main.js: add truncate implementation
-- tests/unit/truncate.test.js: unit tests for the example, edge cases, and null input
-- README.md: usage example
+- tests/unit/: add the files above with minimal fixtures and assertions that exercise the public API.
 
 Acceptance Criteria
-- truncate("Hello World", 8) returns "Hello…".
-- truncate handles null/undefined by returning empty string.
-- Behavior does not split words except when a single word exceeds maxLength (that word is then clipped and suffixed).
+- There is at least one passing unit test for each acceptance criteria listed in the mission document.
+- Test files are present in tests/unit/ and are runnable with npm test (vitest).
