@@ -1,5 +1,7 @@
 # LEVENSHTEIN
 
+Status: IMPLEMENTED — Implemented in src/lib/main.js (see issue #90)
+
 Summary
 
 Provide a levenshtein function exported from src/lib/main.js that computes the edit distance between two strings using the standard dynamic programming algorithm. Null or undefined inputs should be treated as empty strings.

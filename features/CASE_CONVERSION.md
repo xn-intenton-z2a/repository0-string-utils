@@ -1,5 +1,7 @@
 # CASE_CONVERSION
 
+Status: IMPLEMENTED — Implemented in src/lib/main.js (see issue #90)
+
 Summary
 
 Provide camelCase, kebabCase, and titleCase functions exported from src/lib/main.js. Each function accepts a string and returns a transformed string. Null or undefined inputs return an empty string.

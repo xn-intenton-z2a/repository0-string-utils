@@ -1,5 +1,7 @@
 # PLURALIZE
 
+Status: IMPLEMENTED — Implemented in src/lib/main.js (see issue #90)
+
 Summary
 
 Provide a pluralize function exported from src/lib/main.js that converts a singular English noun to its basic plural form using simple rule-based heuristics. Irregular and highly exceptional plurals are out of scope.

@@ -1,5 +1,7 @@
 # TESTS_AND_DOCS
 
+Status: IMPLEMENTED — Tests and documentation created and linked to src/lib/main.js (see issue #90)
+
 Summary
 
 Provide a feature that describes the test and documentation work required to complete the mission: comprehensive unit tests for every exported function and README updates with usage examples for each function.

@@ -1,5 +1,7 @@
 # WORD_WRAP
 
+Status: IMPLEMENTED — Implemented in src/lib/main.js (see issue #90)
+
 Summary
 
 Provide a wordWrap function exported from src/lib/main.js that soft wraps text at word boundaries. It must never break a word across lines. If a single word is longer than the requested width, place that word alone on a line unbroken. The line separator must be a newline character.

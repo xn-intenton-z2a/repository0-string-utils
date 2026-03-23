@@ -1,5 +1,7 @@
 # SANITIZE
 
+Status: IMPLEMENTED — Implemented in src/lib/main.js (see issue #90)
+
 Summary
 
 Provide two utility functions exported from src/lib/main.js: stripHtml and escapeRegex. stripHtml removes HTML tags and decodes common HTML entities. escapeRegex returns the input string with all regular expression metacharacters escaped so it can safely be used in a regex pattern.

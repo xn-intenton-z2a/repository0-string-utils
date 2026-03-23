@@ -1,5 +1,7 @@
 # TRUNCATE
 
+Status: IMPLEMENTED — Implemented in src/lib/main.js (see issue #90)
+
 Summary
 
 Provide a truncate function exported from src/lib/main.js that shortens text to a maximum length and appends a suffix when truncation occurs. The default suffix is the ellipsis character ….

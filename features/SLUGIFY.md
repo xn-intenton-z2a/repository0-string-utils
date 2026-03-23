@@ -1,5 +1,7 @@
 # SLUGIFY
 
+Status: IMPLEMENTED — Implemented in src/lib/main.js (see issue #90)
+
 Summary
 
 Provide a slugify function exported from src/lib/main.js that converts input text into a URL-friendly slug. The function handles empty, null, and undefined inputs by returning an empty string and is Unicode-aware.
