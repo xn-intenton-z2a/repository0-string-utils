@@ -180,3 +180,85 @@ export function levenshtein(a, b) {
   }
   return v1[m];
 }
+
+export function resolveLocalRefs(schema) {
+  if (!schema || typeof schema !== "object") return schema;
+  const root = cloneDeep(schema);
+
+  function resolve(node, stack = new Set()) {
+    if (Array.isArray(node)) return node.map((n) => resolve(n, stack));
+    if (node && typeof node === "object") {
+      if (node.$ref && typeof node.$ref === "string") {
+        const ref = node.$ref;
+        if (!ref.startsWith("#")) {
+          throw new Error(`Remote $ref not supported: ${ref}`);
+        }
+        const pointer = ref.slice(1); // remove leading '#'
+        // detect circular refs
+        if (stack.has(pointer)) {
+          // return the $ref as-is to avoid infinite recursion (best-effort)
+          return { $ref: ref };
+        }
+        stack.add(pointer);
+        const target = getByPointer(root, pointer);
+        const resolved = cloneDeep(target);
+        const out = resolve(resolved, stack);
+        stack.delete(pointer);
+        return out;
+      }
+      const out = {};
+      for (const [k, v] of Object.entries(node)) {
+        out[k] = resolve(v, stack);
+      }
+      return out;
+    }
+    return node;
+  }
+
+  return resolve(root);
+}
+
+export function diffSchemas(schemaA, schemaB) {
+  if (!schemaA || !schemaB) throw new Error("Both schemas must be provided");
+  const a = resolveLocalRefs(schemaA);
+  const b = resolveLocalRefs(schemaB);
+  const changes = diffSubschemas(a, b, "");
+  return changes;
+}
+
+export function classifyChange(change) {
+  if (!change || typeof change !== "object") return "informational";
+  const t = change.changeType;
+  if (t === "property-added") return "compatible";
+  if (t === "property-removed") return change.wasRequired ? "breaking" : "compatible";
+  if (t === "type-changed") return "breaking";
+  if (t === "required-added") return "breaking";
+  if (t === "required-removed") return "compatible";
+  if (t === "enum-value-added") return "compatible";
+  if (t === "enum-value-removed") return "breaking";
+  if (t === "description-changed") return "informational";
+  if (t === "nested-changed") {
+    // evaluate nested changes: breaking > compatible > informational
+    const nested = Array.isArray(change.changes) ? change.changes : [];
+    let worst = "informational";
+    for (const c of nested) {
+      const cls = classifyChange(c);
+      if (cls === "breaking") return "breaking";
+      if (cls === "compatible") worst = "compatible";
+    }
+    return worst;
+  }
+  if (t === "schema-removed" || t === "schema-added" || t.endsWith("-removed")) return "breaking";
+  return "informational";
+}
+
+export function formatChanges(changes, options = { style: "text" }) {
+  if (!Array.isArray(changes)) return "";
+  if (options.style === "json") return JSON.stringify(changes, null, 2);
+  // text
+  const lines = [];
+  for (const c of changes) {
+    lines.push(formatChangeText(c));
+  }
+  return lines.join("\n");
+}
