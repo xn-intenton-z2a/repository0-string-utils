@@ -26,7 +26,7 @@ New functions:
 - diffSchemas(schemaA, schemaB) — returns an array of change records describing differences between two schemas
 - resolveLocalRefs(schema) — resolves local JSON Pointer $ref within a single document; throws on remote refs
 - classifyChange(change) — classifies a change as "breaking", "compatible", or "informational"
-- formatChanges(changes, options) — render changes as human-readable text (or JSON with options.style = 'json')
+- formatChanges(changes, options) — render changes as human-readable text (or JSON with options.format = 'json')
 
 Change record examples
 
@@ -79,14 +79,47 @@ const changes = diffSchemas(schemaA, schemaB);
 console.log(formatChanges(changes));
 ```
 
-Sample human-readable output
+Before / After example
+
+Schema A (before):
+
+```json
+{
+  "type": "object",
+  "properties": {
+    "email": { "type": "string" },
+    "age": { "type": "number" }
+  },
+  "required": ["email"]
+}
+```
+
+Schema B (after):
+
+```json
+{
+  "type": "object",
+  "properties": {
+    "age": { "type": "number" }
+  },
+  "required": []
+}
+```
+
+Running the diff:
+
+```js
+const changes = diffSchemas(schemaA, schemaB);
+console.log(formatChanges(changes));
+```
+
+Sample formatted output (human-friendly):
 
 ```
-[COMPATIBLE] /properties/addr: nested-changed (1 changes)
-  [COMPATIBLE] /properties/addr/properties/city: property-added (type: "string")
-[COMPATIBLE] /properties/email: property-added (type: "string")
-[BREAKING] /properties/email: required-added
+[BREAKING] /properties/email: property-removed [was required]
 ```
+
+This indicates that removing a required property is classified as a breaking change.
 
 Notes
 
@@ -97,35 +130,11 @@ Compute the diff:
 
 Open `src/web/index.html` in a browser (or run `npm run build:web` then serve `docs/`) to see a live demo of the string utilities and the schema diff engine.
 
-const changes = diffSchemas(oldSchema, newSchema);
-console.log(JSON.stringify(changes, null, 2));
-// or print human-friendly text
-console.log(formatChanges(changes));
-```
-
-Sample formatted output:
-
-```
-Removed property /properties/email (breaking) [was required]
-Type changed at /properties/age: "number" -> "string" (breaking)
-Added property /properties/phone (compatible)
-Required property removed /required/email (compatible)
-```
-
-Notes
-
-- The diff engine resolves local `$ref` pointers (JSON Pointer form, e.g. `#/definitions/Address`) before diffing. Remote `$ref` (URLs) are not supported and will throw an error.
-- The diff traverses `properties`, `items`, `allOf`, `oneOf`, and `anyOf` recursively and returns an array of change records. Each change record includes a `path` and `changeType` and contextual `before`/`after` data where relevant.
-
 Running tests
 
 ```bash
 npm ci
 npm test
 ```
-
-Website demo
-
-Open `src/web/index.html` in a browser to see a live demo of the string utilities and the schema diff engine.
 
 License: MIT
