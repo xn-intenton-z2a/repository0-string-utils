@@ -1,21 +1,21 @@
-# SCHEMA_DIFF
+# CORE_API
 
 Summary
-Provide the library's core public API and export contract. The library must export the following named functions from src/lib/main.js: diffSchemas, renderChanges, classifyChange, resolveLocalRefs. Each export must be a named export and have predictable inputs and outputs as described below.
+Define the library public API and contract so consumers can rely on stable named exports and predictable behaviour.
 
 Specification
-- diffSchemas(beforeSchema, afterSchema): returns an array of change records conforming to the mission Change Record Format; each record includes path, changeType, before, after and may include nested details.
-- renderChanges(changes, options): returns either a human-readable text string or a JSON-serialisable array depending on options.format (json or text); supports options.maxLines and options.includeNested.
-- classifyChange(change): deterministically returns one of the values breaking, compatible, informational; for nested-changed results apply aggregation rules.
-- resolveLocalRefs(schema): returns a new schema with all fragment-only $ref resolved in-place; throws when encountering non-local $ref or unresolvable pointers.
+- Named exports required from src/lib/main.js:
+  - diffSchemas(beforeSchema, afterSchema): returns an array of change records as defined in the mission.
+  - renderChanges(changes, options): returns a text string or JSON-serialisable value depending on options.format (json or text).
+  - classifyChange(change): returns one of breaking, compatible, informational.
+  - resolveLocalRefs(schema): returns a new schema with fragment-only $ref resolved in-place or throws on remote $ref.
+- Exports must be named (not default) and have stable argument/return semantics documented in README.
 
 Files to change
 - src/lib/main.js: implement and export the named functions above.
-- tests/unit/: add unit tests that exercise the API surface.
-- README.md: include usage examples that call diffSchemas and renderChanges.
+- tests/unit/api-surface.test.js: assertions that the named exports exist and basic type contracts hold.
 
 Acceptance Criteria
-- Named exports diffSchemas, renderChanges, classifyChange, resolveLocalRefs are present in src/lib/main.js.
-- diffSchemas returns an array for a simple before/after pair and each element matches the Change Record Format.
-- renderChanges supports format=json and format=text and returns appropriate representations.
-- resolveLocalRefs resolves fragment-only $ref and throws on remote $ref.
+- diffSchemas, renderChanges, classifyChange and resolveLocalRefs are available as named exports from src/lib/main.js.
+- diffSchemas returns an array for a simple before/after example and each element follows the Change Record Format.
+- resolveLocalRefs throws when encountering non-fragment (remote) $ref in unit tests.
