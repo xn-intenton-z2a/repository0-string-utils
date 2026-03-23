@@ -1,7 +1,6 @@
 #!/usr/bin/env node
 // SPDX-License-Identifier: MIT
 // Copyright (C) 2025-2026 Polycode Limited
-// src/lib/main.js
 
 const isNode = typeof process !== "undefined" && !!process.versions?.node;
 
@@ -465,4 +464,276 @@ if (isNode) {
     const args = process.argv.slice(2);
     main(args);
   }
+}
+
+// -----------------------------
+// JSON Schema diff engine
+// -----------------------------
+
+function cloneDeep(obj) {
+  return JSON.parse(JSON.stringify(obj));
+}
+
+function unescapePointer(segment) {
+  return segment.replace(/~1/g, "/").replace(/~0/g, "~");
+}
+
+function getByPointer(root, pointer) {
+  if (!pointer) return root;
+  // pointer may start with '/', but may be empty for '#'
+  const parts = pointer.split("/").slice(1).map(unescapePointer);
+  let node = root;
+  for (const p of parts) {
+    if (node && typeof node === "object" && p in node) {
+      node = node[p];
+    } else {
+      throw new Error(`Invalid JSON Pointer: #/${parts.join("/")}`);
+    }
+  }
+  return node;
+}
+
+export function resolveLocalRefs(schema) {
+  if (!schema || typeof schema !== "object") return schema;
+  const root = cloneDeep(schema);
+
+  function resolve(node, stack = new Set()) {
+    if (Array.isArray(node)) return node.map((n) => resolve(n, stack));
+    if (node && typeof node === "object") {
+      if (node.$ref && typeof node.$ref === "string") {
+        const ref = node.$ref;
+        if (!ref.startsWith("#")) {
+          throw new Error(`Remote $ref not supported: ${ref}`);
+        }
+        const pointer = ref.slice(1); // remove leading '#'
+        // detect circular refs
+        if (stack.has(pointer)) {
+          // return the $ref as-is to avoid infinite recursion (best-effort)
+          return { $ref: ref };
+        }
+        stack.add(pointer);
+        const target = getByPointer(root, pointer);
+        const resolved = cloneDeep(target);
+        const out = resolve(resolved, stack);
+        stack.delete(pointer);
+        return out;
+      }
+      const out = {};
+      for (const [k, v] of Object.entries(node)) {
+        out[k] = resolve(v, stack);
+      }
+      return out;
+    }
+    return node;
+  }
+
+  return resolve(root);
+}
+
+function ensureArray(x) {
+  if (x == null) return [];
+  return Array.isArray(x) ? x : [x];
+}
+
+function arrayDiff(a = [], b = []) {
+  const added = b.filter((v) => !a.includes(v));
+  const removed = a.filter((v) => !b.includes(v));
+  return { added, removed };
+}
+
+function makePath(parentPath, segment) {
+  let p;
+  if (!parentPath) p = segment || "";
+  else if (!segment) p = parentPath;
+  else p = parentPath.replace(/\/$/, "") + (segment.startsWith("/") ? segment : "/" + segment).replace(/\/\//g, "/");
+  if (!p) return "/";
+  return p.startsWith("/") ? p : "/" + p;
+}
+
+function diffSubschemas(a, b, path = "") {
+  const changes = [];
+  // both may be undefined
+  if (!a && b) {
+    changes.push({ path, changeType: "schema-added", before: null, after: cloneDeep(b) });
+    return changes;
+  }
+  if (a && !b) {
+    changes.push({ path, changeType: "schema-removed", before: cloneDeep(a), after: null });
+    return changes;
+  }
+  // compare simple keywords: type
+  if (a && b) {
+    if (a.type !== b.type) {
+      changes.push({ path: makePath(path, "type"), changeType: "type-changed", before: a.type ?? null, after: b.type ?? null });
+    }
+    if ((a.description || "") !== (b.description || "")) {
+      changes.push({ path: makePath(path, "description"), changeType: "description-changed", before: a.description ?? null, after: b.description ?? null });
+    }
+    // enum
+    if (Array.isArray(a.enum) || Array.isArray(b.enum)) {
+      const aEnum = ensureArray(a.enum);
+      const bEnum = ensureArray(b.enum);
+      for (const v of bEnum.filter((x) => !aEnum.includes(x))) {
+        changes.push({ path: makePath(path, "enum"), changeType: "enum-value-added", before: null, after: v });
+      }
+      for (const v of aEnum.filter((x) => !bEnum.includes(x))) {
+        changes.push({ path: makePath(path, "enum"), changeType: "enum-value-removed", before: v, after: null });
+      }
+    }
+
+    // properties
+    const aProps = (a.properties && typeof a.properties === "object") ? a.properties : {};
+    const bProps = (b.properties && typeof b.properties === "object") ? b.properties : {};
+    const aReq = ensureArray(a.required);
+    const bReq = ensureArray(b.required);
+
+    const allPropKeys = Array.from(new Set([...Object.keys(aProps), ...Object.keys(bProps)]));
+    for (const key of allPropKeys) {
+      const aP = aProps[key];
+      const bP = bProps[key];
+      const propPath = makePath(path, `properties/${key}`);
+      if (aP && !bP) {
+        changes.push({ path: propPath, changeType: "property-removed", before: cloneDeep(aP), after: null, wasRequired: aReq.includes(key) });
+      } else if (!aP && bP) {
+        changes.push({ path: propPath, changeType: "property-added", before: null, after: cloneDeep(bP), isRequired: bReq.includes(key) });
+      } else if (aP && bP) {
+        // nested diff
+        const nested = diffSubschemas(aP, bP, propPath);
+        if (nested.length > 0) {
+          changes.push({ path: propPath, changeType: "nested-changed", changes: nested });
+        }
+      }
+    }
+
+    // required changes (per-property)
+    for (const added of bReq.filter((r) => !aReq.includes(r))) {
+      changes.push({ path: makePath(path, `properties/${added}`), changeType: "required-added", before: false, after: true });
+    }
+    for (const removed of aReq.filter((r) => !bReq.includes(r))) {
+      changes.push({ path: makePath(path, `properties/${removed}`), changeType: "required-removed", before: true, after: false });
+    }
+
+    // items
+    if (a.items || b.items) {
+      const aItems = a.items || null;
+      const bItems = b.items || null;
+      const itemsPath = makePath(path, "items");
+      if (!aItems && bItems) {
+        changes.push({ path: itemsPath, changeType: "items-added", before: null, after: cloneDeep(bItems) });
+      } else if (aItems && !bItems) {
+        changes.push({ path: itemsPath, changeType: "items-removed", before: cloneDeep(aItems), after: null });
+      } else if (aItems && bItems) {
+        const nested = diffSubschemas(aItems, bItems, itemsPath);
+        if (nested.length > 0) {
+          changes.push({ path: itemsPath, changeType: "nested-changed", changes: nested });
+        }
+      }
+    }
+
+    // combinators: allOf/oneOf/anyOf
+    for (const comb of ["allOf", "oneOf", "anyOf"]) {
+      const aComb = Array.isArray(a[comb]) ? a[comb] : [];
+      const bComb = Array.isArray(b[comb]) ? b[comb] : [];
+      const max = Math.max(aComb.length, bComb.length);
+      for (let i = 0; i < max; i++) {
+        const aC = aComb[i];
+        const bC = bComb[i];
+        const combPath = makePath(path, `${comb}/${i}`);
+        if (aC && !bC) {
+          changes.push({ path: combPath, changeType: `${comb}-removed`, before: cloneDeep(aC), after: null });
+        } else if (!aC && bC) {
+          changes.push({ path: combPath, changeType: `${comb}-added`, before: null, after: cloneDeep(bC) });
+        } else if (aC && bC) {
+          const nested = diffSubschemas(aC, bC, combPath);
+          if (nested.length > 0) {
+            changes.push({ path: combPath, changeType: "nested-changed", changes: nested });
+          }
+        }
+      }
+    }
+  }
+
+  return changes;
+}
+
+export function diffSchemas(schemaA, schemaB) {
+  if (!schemaA || !schemaB) throw new Error("Both schemas must be provided");
+  const a = resolveLocalRefs(schemaA);
+  const b = resolveLocalRefs(schemaB);
+  const changes = diffSubschemas(a, b, "");
+  return changes;
+}
+
+export function classifyChange(change) {
+  if (!change || typeof change !== "object") return "informational";
+  const t = change.changeType;
+  if (t === "property-added") return "compatible";
+  if (t === "property-removed") return change.wasRequired ? "breaking" : "compatible";
+  if (t === "type-changed") return "breaking";
+  if (t === "required-added") return "breaking";
+  if (t === "required-removed") return "compatible";
+  if (t === "enum-value-added") return "compatible";
+  if (t === "enum-value-removed") return "breaking";
+  if (t === "description-changed") return "informational";
+  if (t === "nested-changed") {
+    // evaluate nested changes: breaking > compatible > informational
+    const nested = Array.isArray(change.changes) ? change.changes : [];
+    let worst = "informational";
+    for (const c of nested) {
+      const cls = classifyChange(c);
+      if (cls === "breaking") return "breaking";
+      if (cls === "compatible") worst = "compatible";
+    }
+    return worst;
+  }
+  if (t === "schema-removed" || t === "schema-added" || t.endsWith("-removed")) return "breaking";
+  return "informational";
+}
+
+function formatChangeText(change, indent = "") {
+  const classify = classifyChange(change);
+  const tag = `[${classify.toUpperCase()}]`;
+  const p = change.path || "/";
+  switch (change.changeType) {
+    case "property-added":
+      return `${indent}${tag} ${p}: property-added (type: ${JSON.stringify(change.after?.type ?? null)})`;
+    case "property-removed":
+      return `${indent}${tag} ${p}: property-removed${change.wasRequired ? " (was required)" : ""}`;
+    case "type-changed":
+      return `${indent}${tag} ${p}: type-changed ${JSON.stringify(change.before)} -> ${JSON.stringify(change.after)}`;
+    case "required-added":
+      return `${indent}${tag} ${p}: required-added`;
+    case "required-removed":
+      return `${indent}${tag} ${p}: required-removed`;
+    case "enum-value-added":
+      return `${indent}${tag} ${p}: enum-value-added ${JSON.stringify(change.after)}`;
+    case "enum-value-removed":
+      return `${indent}${tag} ${p}: enum-value-removed ${JSON.stringify(change.before)}`;
+    case "description-changed":
+      return `${indent}${tag} ${p}: description-changed ${JSON.stringify(change.before)} -> ${JSON.stringify(change.after)}`;
+    case "nested-changed": {
+      const lines = [`${indent}${tag} ${p}: nested-changed (${change.changes.length} changes)`];
+      for (const ch of change.changes) {
+        lines.push(formatChangeText(ch, indent + "  "));
+      }
+      return lines.join("\n");
+    }
+    case "schema-added":
+      return `${indent}${tag} ${p}: schema-added`;
+    case "schema-removed":
+      return `${indent}${tag} ${p}: schema-removed`;
+    default:
+      return `${indent}${tag} ${p}: ${change.changeType}`;
+  }
+}
+
+export function formatChanges(changes, options = { style: "text" }) {
+  if (!Array.isArray(changes)) return "";
+  if (options.style === "json") return JSON.stringify(changes, null, 2);
+  // text
+  const lines = [];
+  for (const c of changes) {
+    lines.push(formatChangeText(c));
+  }
+  return lines.join("\n");
 }

@@ -1,8 +1,8 @@
 # repo — String Utilities and JSON Schema Diff
 
-This repository contains a small collection of string utility functions implemented in plain JavaScript (ESM), and a lightweight JSON Schema diff engine to help detect breaking changes between schema versions.
+This repository contains a small collection of string utility functions implemented in plain JavaScript (ESM) together with a JSON Schema diff engine that helps detect changes between two JSON Schema (Draft-07) documents.
 
-Exported functions (selected)
+Exported functions (string utilities)
 
 - slugify(input)
 - truncate(input, maxLength = 30, ellipsis = '...')
@@ -19,38 +19,83 @@ Exported functions (selected)
 - classifyChange(change) — classify a change as 'breaking' | 'compatible' | 'informational'
 - formatChanges(changes, options) — produce human-readable text or JSON
 
-JSON Schema diff example
+JSON Schema diff engine
 
-Before schema (old):
+New functions:
 
-```js
-const oldSchema = {
-  type: 'object',
-  properties: {
-    email: { type: 'string', description: 'User email' },
-    age: { type: 'number' }
-  },
-  required: ['email']
-};
-```
+- diffSchemas(schemaA, schemaB) — returns an array of change records describing differences between two schemas
+- resolveLocalRefs(schema) — resolves local JSON Pointer $ref within a single document; throws on remote refs
+- classifyChange(change) — classifies a change as "breaking", "compatible", or "informational"
+- formatChanges(changes, options) — render changes as human-readable text (or JSON with options.style = 'json')
 
-After schema (new):
+Change record examples
+
+A change record is an object similar to:
 
 ```js
-const newSchema = {
-  type: 'object',
-  properties: {
-    phone: { type: 'string' },
-    age: { type: 'string' }
-  },
-  required: []
-};
+{ path: "/properties/email", changeType: "type-changed", before: "string", after: "number" }
 ```
 
-Compute the diff:
+Supported changeType values include:
+
+- property-added / property-removed
+- type-changed
+- required-added / required-removed
+- enum-value-added / enum-value-removed
+- description-changed
+- nested-changed (contains a `changes` array with sub-diffs)
+
+Usage example
 
 ```js
 import { diffSchemas, formatChanges } from './src/lib/main.js';
+
+const schemaA = {
+  definitions: {
+    address: { type: "object", properties: { street: { type: "string" } }, required: ["street"] }
+  },
+  type: "object",
+  properties: {
+    id: { type: "string" },
+    addr: { $ref: "#/definitions/address" }
+  },
+  required: ["id"]
+};
+
+const schemaB = {
+  definitions: {
+    address: { type: "object", properties: { street: { type: "string" }, city: { type: "string" } }, required: ["street"] }
+  },
+  type: "object",
+  properties: {
+    id: { type: "string" },
+    addr: { $ref: "#/definitions/address" },
+    email: { type: "string" }
+  },
+  required: ["id", "email"]
+};
+
+const changes = diffSchemas(schemaA, schemaB);
+console.log(formatChanges(changes));
+```
+
+Sample human-readable output
+
+```
+[COMPATIBLE] /properties/addr: nested-changed (1 changes)
+  [COMPATIBLE] /properties/addr/properties/city: property-added (type: "string")
+[COMPATIBLE] /properties/email: property-added (type: "string")
+[BREAKING] /properties/email: required-added
+```
+
+Notes
+
+- The diff engine resolves local (same-document) JSON Pointer references ($ref starting with '#') before comparing constructs so that changes in referenced definitions are visible at usage sites.
+- Remote $ref (http/https or file references) are considered out-of-scope and will cause resolveLocalRefs to throw.
+
+Compute the diff:
+
+Open `src/web/index.html` in a browser (or run `npm run build:web` then serve `docs/`) to see a live demo of the string utilities and the schema diff engine.
 
 const changes = diffSchemas(oldSchema, newSchema);
 console.log(JSON.stringify(changes, null, 2));
