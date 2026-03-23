@@ -16,9 +16,7 @@
   "keywords": [],
   "author": "",
   "license": "MIT",
-  "dependencies": {
-    "@xn-intenton-z2a/agentic-lib": "^7.4.57"
-  },
+  "dependencies": {},
   "devDependencies": {
     "@playwright/test": "^1.58.0",
     "@vitest/coverage-v8": "^4.0.18",
