@@ -3,18 +3,14 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>repository0</title>
-  <meta property="og:title" content="repository0">
-  <meta property="og:description" content="An autonomous repository powered by agentic-lib">
-  <meta property="og:type" content="website">
+  <title>repository0 - String Utilities Demo</title>
   <style>
-    body { font-family: system-ui, -apple-system, sans-serif; max-width: 800px; margin: 0 auto; padding: 2rem; color: #333; }
+    body { font-family: system-ui, -apple-system, sans-serif; max-width: 900px; margin: 0 auto; padding: 2rem; color: #222; }
     h1 { border-bottom: 2px solid #eee; padding-bottom: 0.5rem; }
-    a { color: #0366d6; }
     .identity { background: #f6f8fa; padding: 1rem; border-radius: 6px; margin: 1rem 0; font-family: monospace; }
-    .identity dt { font-weight: bold; color: #666; }
-    .identity dd { margin: 0 0 0.5rem 0; font-size: 1.1rem; }
-    #demo-output { background: #1e1e1e; color: #d4d4d4; padding: 1rem; border-radius: 6px; font-family: monospace; white-space: pre-wrap; min-height: 2rem; }
+    #demo-output { background: #fff; border: 1px solid #eee; padding: 1rem; border-radius: 6px; white-space: pre-wrap; font-family: monospace; }
+    table { border-collapse: collapse; margin-top: 1rem; }
+    td, th { border: 1px solid #ddd; padding: 0.5rem 1rem; }
   </style>
 </head>
 <body>
@@ -27,22 +23,50 @@
       <dd id="lib-description">loading...</dd>
     </dl>
   </div>
-  <h2>Output</h2>
-  <div id="demo-output">Loading library...</div>
-  <h2>About</h2>
-  <p>This website uses the library. See <a href="https://github.com/xn-intenton-z2a/repository0">the repository</a> for source code and mission details.</p>
+
+  <h2>String Utilities Demo</h2>
+  <div id="demo-output">Loading demo...</div>
+
   <script type="module">
     try {
-      const { name, version, description } = await import('./lib.js');
+      const lib = await import('./lib.js');
+      const { name, version, description, slugify, truncate, camelCase, kebabCase, titleCase, wordWrap, stripHtml, escapeRegex, pluralize, levenshtein } = lib;
       document.getElementById('lib-name').textContent = name;
       document.getElementById('lib-version').textContent = version;
       document.getElementById('lib-description').textContent = description || '(no description)';
-      document.getElementById('demo-output').textContent = JSON.stringify({ name, version, description }, null, 2);
-      document.title = name + ' v' + version;
+
+      const samples = {
+        slugify: ['Hello World!', '  Multiple --- separators ---', 'Ärvíztűrő tükörfúrógép'],
+        truncate: ['This is a long sentence that will be truncated', 'Short'],
+        camelCase: ['hello world', 'snake_case_example', 'XMLHttpRequest'],
+        kebabCase: ['HelloWorldExample', 'This is a test', 'foo_bar'],
+        titleCase: ['this is a title', 'ANOTHER title'],
+        wordWrap: ['Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed non risus.'],
+        stripHtml: ['<p>Hello <strong>World</strong> &amp; friends</p>'],
+        escapeRegex: ['file.*(test)?[0-9]'],
+        pluralize: ['cat', 'baby', 'bus', 'person'],
+        levenshtein: [['kitten','sitting'], ['flaw','lawn']]
+      };
+
+      function runDemo() {
+        const out = {};
+        out.slugify = samples.slugify.map(s => ({ input: s, out: slugify(s) }));
+        out.truncate = samples.truncate.map(s => ({ input: s, out: truncate(s, 20) }));
+        out.camelCase = samples.camelCase.map(s => ({ input: s, out: camelCase(s) }));
+        out.kebabCase = samples.kebabCase.map(s => ({ input: s, out: kebabCase(s) }));
+        out.titleCase = samples.titleCase.map(s => ({ input: s, out: titleCase(s) }));
+        out.wordWrap = { input: samples.wordWrap[0], out: wordWrap(samples.wordWrap[0], 40) };
+        out.stripHtml = samples.stripHtml.map(s => ({ input: s, out: stripHtml(s) }));
+        out.escapeRegex = samples.escapeRegex.map(s => ({ input: s, out: escapeRegex(s) }));
+        out.pluralize = samples.pluralize.map(s => ({ input: s, out: pluralize(s) }));
+        out.levenshtein = samples.levenshtein.map(pair => ({ input: pair, out: levenshtein(pair[0], pair[1]) }));
+        return out;
+      }
+
+      document.getElementById('demo-output').textContent = JSON.stringify(runDemo(), null, 2);
+      document.title = name + ' v' + version + ' — String Utils Demo';
     } catch (e) {
-      document.getElementById('lib-version').textContent = '(error)';
-      document.getElementById('lib-description').textContent = e.message;
-      document.getElementById('demo-output').textContent = 'Failed to load library: ' + e.message;
+      document.getElementById('demo-output').textContent = 'Failed to load demo: ' + e.message;
     }
   </script>
 </body>
