@@ -1,22 +1,6 @@
 # Sources
 
-Authoritative references for the JSON Schema diff mission. These cover the Draft-07 specification, JSON Pointer, $ref resolution, object/required semantics, combining keywords (allOf/oneOf/anyOf), arrays/items, and an implementation guide for local references.
+Reference material and documentation sources for this project.
 
-- https://json-schema.org/
-- https://json-schema.org/understanding-json-schema/
-- https://json-schema.org/understanding-json-schema/structuring.html#ref
-- https://json-schema.org/understanding-json-schema/reference/object.html
-- https://json-schema.org/understanding-json-schema/reference/required.html
-- https://json-schema.org/understanding-json-schema/reference/array.html
-- https://json-schema.org/understanding-json-schema/reference/combining.html
-- https://json-schema.org/understanding-json-schema/reference/type.html
-- https://json-schema.org/understanding-json-schema/reference/definitions.html
-- https://json-schema.org/draft-07/schema
-- https://datatracker.ietf.org/doc/html/rfc6901
-- https://ajv.js.org/guide/refs.html
-- https://github.com/json-schema-org/JSON-Schema-Test-Suite
-
-# Implementation and tooling references
-- https://github.com/APIDevTools/json-schema-ref-parser
-- https://www.npmjs.com/package/@apidevtools/json-schema-ref-parser
-- https://github.com/ajv-validator/ajv
+Add URLs, papers, API docs, or other reference material here.
+The maintain-library workflow will process these into `library/` documents.
