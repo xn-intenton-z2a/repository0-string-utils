@@ -149,7 +149,6 @@ export function pluralize(word, count = null) {
     goose: "geese",
     ox: "oxen",
     louse: "lice",
-    // preserve case by returning lower-case for now
   };
   if (irregular[lower]) return irregular[lower];
   if (/[sxz]$/i.test(s) || /(?:ch|sh)$/i.test(s)) return s + "es";
@@ -179,4 +178,193 @@ export function levenshtein(a, b) {
     for (let j = 0; j <= m; j++) v0[j] = v1[j];
   }
   return v1[m];
+}
+
+export function resolveLocalRefs(schema) {
+  const root = deepClone(schema);
+  const cache = new Map();
+
+  function walk(parent, key, node) {
+    if (!node || typeof node !== 'object') return;
+    if (node.$ref && typeof node.$ref === 'string') {
+      const ref = node.$ref;
+      if (!ref.startsWith('#')) throw new Error('Remote $ref not supported: ' + ref);
+      if (cache.has(ref)) {
+        const resolvedCopy = deepClone(cache.get(ref));
+        if (parent) parent[key] = resolvedCopy;
+        else Object.assign(root, resolvedCopy);
+        return walk(parent, key, resolvedCopy);
+      }
+      const referenced = getByJsonPointer(root, ref);
+      if (referenced === undefined) throw new Error('Unresolved local $ref: ' + ref);
+      cache.set(ref, referenced);
+      const resolved = deepClone(referenced);
+      if (parent) parent[key] = resolved;
+      else Object.assign(root, resolved);
+      return walk(parent, key, resolved);
+    }
+    if (Array.isArray(node)) {
+      for (let i = 0; i < node.length; i++) walk(node, i, node[i]);
+      return;
+    }
+    for (const k of Object.keys(node)) walk(node, k, node[k]);
+  }
+
+  walk(null, null, root);
+  return root;
+}
+
+export function diffSchemas(schemaA, schemaB) {
+  const a = resolveLocalRefs(schemaA || {});
+  const b = resolveLocalRefs(schemaB || {});
+
+  function diffNode(nodeA = {}, nodeB = {}, path = '') {
+    const changes = [];
+
+    // description
+    const descA = nodeA.description;
+    const descB = nodeB.description;
+    if (descA !== descB) {
+      changes.push({ path: path || '/', changeType: 'description-changed', before: descA, after: descB });
+    }
+
+    // enum
+    const enumA = Array.isArray(nodeA.enum) ? nodeA.enum : [];
+    const enumB = Array.isArray(nodeB.enum) ? nodeB.enum : [];
+    for (const v of enumA) if (!enumB.includes(v)) changes.push({ path: joinPath(path, 'enum'), changeType: 'enum-value-removed', before: v, after: undefined });
+    for (const v of enumB) if (!enumA.includes(v)) changes.push({ path: joinPath(path, 'enum'), changeType: 'enum-value-added', before: undefined, after: v });
+
+    // type
+    const typeA = nodeA.type;
+    const typeB = nodeB.type;
+    if (!equalType(typeA, typeB)) changes.push({ path: path || '/', changeType: 'type-changed', before: typeA, after: typeB });
+
+    // required arrays at this node
+    const reqA = Array.isArray(nodeA.required) ? nodeA.required : [];
+    const reqB = Array.isArray(nodeB.required) ? nodeB.required : [];
+    for (const p of reqA) if (!reqB.includes(p)) changes.push({ path: joinPath(path, 'required/' + p), changeType: 'required-removed', before: reqA.slice(), after: reqB.slice() });
+    for (const p of reqB) if (!reqA.includes(p)) changes.push({ path: joinPath(path, 'required/' + p), changeType: 'required-added', before: reqA.slice(), after: reqB.slice() });
+
+    // properties
+    const propsA = nodeA.properties || {};
+    const propsB = nodeB.properties || {};
+    const keysA = Object.keys(propsA);
+    const keysB = Object.keys(propsB);
+
+    for (const k of keysA) if (!keysB.includes(k)) {
+      const wasRequired = reqA.includes(k);
+      changes.push({ path: joinPath(path, 'properties/' + k), changeType: 'property-removed', before: propsA[k], after: undefined, wasRequired });
+    }
+    for (const k of keysB) if (!keysA.includes(k)) {
+      const isRequired = reqB.includes(k);
+      changes.push({ path: joinPath(path, 'properties/' + k), changeType: 'property-added', before: undefined, after: propsB[k], isRequired });
+    }
+
+    for (const k of keysA.filter((x) => keysB.includes(x))) {
+      const subA = propsA[k] || {};
+      const subB = propsB[k] || {};
+      const nested = diffNode(subA, subB, joinPath(path, 'properties/' + k));
+      if (nested.length) changes.push({ path: joinPath(path, 'properties/' + k), changeType: 'nested-changed', changes: nested });
+    }
+
+    // items
+    if (nodeA.items || nodeB.items) {
+      const itemsA = Array.isArray(nodeA.items) ? nodeA.items : nodeA.items ? [nodeA.items] : [];
+      const itemsB = Array.isArray(nodeB.items) ? nodeB.items : nodeB.items ? [nodeB.items] : [];
+      const max = Math.max(itemsA.length, itemsB.length);
+      for (let i = 0; i < max; i++) {
+        const aItem = i < itemsA.length ? itemsA[i] : undefined;
+        const bItem = i < itemsB.length ? itemsB[i] : undefined;
+        const nested = diffNode(aItem || {}, bItem || {}, joinPath(path, 'items/' + i));
+        if (nested.length) changes.push({ path: joinPath(path, 'items/' + i), changeType: 'nested-changed', changes: nested });
+      }
+    }
+
+    // combinators
+    for (const comb of ['allOf', 'oneOf', 'anyOf']) {
+      const listA = Array.isArray(nodeA[comb]) ? nodeA[comb] : nodeA[comb] ? [nodeA[comb]] : [];
+      const listB = Array.isArray(nodeB[comb]) ? nodeB[comb] : nodeB[comb] ? [nodeB[comb]] : [];
+      const max = Math.max(listA.length, listB.length);
+      for (let i = 0; i < max; i++) {
+        const aEntry = i < listA.length ? listA[i] : undefined;
+        const bEntry = i < listB.length ? listB[i] : undefined;
+        const nested = diffNode(aEntry || {}, bEntry || {}, joinPath(path, comb + '/' + i));
+        if (nested.length) changes.push({ path: joinPath(path, comb + '/' + i), changeType: 'nested-changed', changes: nested });
+      }
+    }
+
+    return changes;
+  }
+
+  return diffNode(a, b, '');
+}
+
+export function classifyChange(change) {
+  if (!change || !change.changeType) return 'informational';
+  switch (change.changeType) {
+    case 'property-removed':
+      return change.wasRequired ? 'breaking' : 'compatible';
+    case 'property-added':
+      return change.isRequired ? 'breaking' : 'compatible';
+    case 'required-added':
+      return 'breaking';
+    case 'required-removed':
+      return 'compatible';
+    case 'type-changed':
+      return 'breaking';
+    case 'enum-value-removed':
+      return 'breaking';
+    case 'enum-value-added':
+      return 'compatible';
+    case 'description-changed':
+      return 'informational';
+    case 'nested-changed':
+      if (!Array.isArray(change.changes) || change.changes.length === 0) return 'informational';
+      // worst severity among nested changes
+      const ranks = { informational: 1, compatible: 2, breaking: 3 };
+      let worst = 'informational';
+      for (const c of change.changes) {
+        const cls = classifyChange(c);
+        if (ranks[cls] > ranks[worst]) worst = cls;
+      }
+      return worst;
+    default:
+      return 'informational';
+  }
+}
+
+export function formatChanges(changes, options = {}) {
+  const asJson = options?.format === 'json' || options?.json === true;
+  if (asJson) return JSON.stringify(changes, null, 2);
+
+  function fmt(chg, indent = 0) {
+    const pad = '  '.repeat(indent);
+    const cls = classifyChange(chg);
+    switch (chg.changeType) {
+      case 'property-added':
+        return `${pad}Added property ${chg.path} (${cls})` + (chg.isRequired ? ' [required]' : '');
+      case 'property-removed':
+        return `${pad}Removed property ${chg.path} (${cls})` + (chg.wasRequired ? ' [was required]' : '');
+      case 'type-changed':
+        return `${pad}Type changed at ${chg.path}: ${JSON.stringify(chg.before)} -> ${JSON.stringify(chg.after)} (${cls})`;
+      case 'required-added':
+        return `${pad}Required property added ${chg.path} (${cls})`;
+      case 'required-removed':
+        return `${pad}Required property removed ${chg.path} (${cls})`;
+      case 'enum-value-added':
+        return `${pad}Enum value added at ${chg.path}: ${JSON.stringify(chg.after)} (${cls})`;
+      case 'enum-value-removed':
+        return `${pad}Enum value removed at ${chg.path}: ${JSON.stringify(chg.before)} (${cls})`;
+      case 'description-changed':
+        return `${pad}Description changed at ${chg.path}: ${JSON.stringify(chg.before)} -> ${JSON.stringify(chg.after)} (${cls})`;
+      case 'nested-changed':
+        return `${pad}Nested changes at ${chg.path} (${cls}):\n` + chg.changes.map((c) => fmt(c, indent + 1)).join('\n');
+      default:
+        return `${pad}${chg.changeType} at ${chg.path} (${cls})`;
+    }
+  }
+
+  if (!Array.isArray(changes)) return '';
+  if (changes.length === 0) return 'No changes detected.';
+  return changes.map((c) => fmt(c, 0)).join('\n');
 }
