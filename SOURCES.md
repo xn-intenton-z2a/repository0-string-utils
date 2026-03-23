@@ -15,3 +15,8 @@ Authoritative references for the JSON Schema diff mission. These cover the Draft
 - https://datatracker.ietf.org/doc/html/rfc6901
 - https://ajv.js.org/guide/refs.html
 - https://github.com/json-schema-org/JSON-Schema-Test-Suite
+
+# Implementation and tooling references
+- https://github.com/APIDevTools/json-schema-ref-parser
+- https://www.npmjs.com/package/@apidevtools/json-schema-ref-parser
+- https://github.com/ajv-validator/ajv

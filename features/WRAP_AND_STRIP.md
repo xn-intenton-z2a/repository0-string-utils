@@ -1,16 +1,16 @@
 # README_EXAMPLES
 
 Summary
-Provide a concise usage example for README.md that demonstrates diffing two simple schemas, resolving local refs, rendering text output, and classifying a breaking change.
+Provide a copy-pasteable README usage example that demonstrates resolveLocalRefs, diffSchemas, renderChanges and classifyChange using a small before/after schema pair that produces a breaking change.
 
-Example content to include in README
-- Two small schema objects: before schema with a required email string, after schema that removes email or changes its type.
-- Call sequence: resolveLocalRefs where necessary, call diffSchemas(before, after) to get changes, call renderChanges(changes, {format: 'text'}) to produce readable output, call classifyChange on each change as demonstration.
-- Explain expected output: show a sample text line showing a BREAKING change for removed required property.
+Specification
+- Example demonstrates a before schema with a required email string and an after schema that removes or changes the email property to cause a breaking change.
+- Example steps: import named exports from src/lib/main.js; call resolveLocalRefs if needed; call diffSchemas(before, after); call renderChanges(changes, {format: 'text'}); call classifyChange on each change.
+- Show a single-line example of expected text output demonstrating a BREAKING classification for a removed required property.
 
 Files to change
-- README.md: include the example section and ensure it references exported function names and sample before/after schemas.
+- README.md: add a Usage examples section containing the minimal example and expected output. Ensure sample code uses the exact exported function names.
 
 Acceptance Criteria
-- README.md contains a minimal working example that can be copy-pasted and run in Node (assumes src/lib/main.js exported functions).
-- The example demonstrates at least one breaking classification and text rendering output.
+- README contains a runnable example demonstrating a breaking classification and text rendering.
+- The example references the exported function names and is copy-pasteable for quick verification.

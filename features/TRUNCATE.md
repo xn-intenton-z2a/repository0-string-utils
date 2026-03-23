@@ -1,19 +1,21 @@
 # UNIT_TESTS
 
 Summary
-Define the unit test coverage required for mission acceptance and list the exact test files and cases that must be present.
+List the unit tests required to validate the diff engine, resolver, traversal, classification, and rendering so acceptance criteria from the mission are verifiable.
 
-Test matrix
-- tests/unit/change-types.test.js: tests for property-added, property-removed, type-changed, required-added, required-removed, enum-value-added, enum-value-removed, description-changed, nested-changed.
-- tests/unit/ref-resolution.test.js: local fragment resolution, percent-encoded fragments, unresolvable pointer error, remote $ref rejection.
-- tests/unit/traversal.test.js: allOf/oneOf/anyOf, tuple items and patternProperties, boolean-schema changes.
-- tests/unit/classification.test.js: removed required property is breaking, nested aggregation rules, type change examples.
-- tests/unit/format.test.js: json and text outputs, maxLines behaviour.
-- tests/unit/api-surface.test.js: asserts named exports exist and null/undefined handling where applicable.
+Specification
+- Required test files and key coverage:
+  - tests/unit/change-types.test.js: tests for property-added, property-removed, type-changed, required-added, required-removed, enum-value-added, enum-value-removed, description-changed, nested-changed.
+  - tests/unit/ref-resolution.test.js: local fragment resolution, percent-encoded fragments, unresolvable pointer error, remote $ref rejection and cycle detection.
+  - tests/unit/traversal.test.js: composition arrays, tuple items, patternProperties, boolean-schema transitions.
+  - tests/unit/classification.test.js: removed required property is breaking and nested aggregation rules.
+  - tests/unit/format.test.js: json and text output and maxLines truncation.
+  - tests/unit/api-surface.test.js: named exports exist and basic behaviour.
+- Keep tests minimal and focussed; each should exercise a single acceptance criterion.
 
 Files to change
-- tests/unit/: add the files above with minimal fixtures and assertions that exercise the public API.
+- Add the test files above under tests/unit/ with focused fixtures and assertions.
 
 Acceptance Criteria
-- There is at least one passing unit test for each acceptance criteria listed in the mission document.
-- Test files are present in tests/unit/ and are runnable with npm test (vitest).
+- There is at least one unit test covering every mission acceptance criterion.
+- Tests run via npm test (vitest) and assert the public API behaviours described in the mission.
