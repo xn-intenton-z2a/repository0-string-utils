@@ -3,14 +3,16 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>repository0 - String Utilities Demo</title>
+  <title>repository0 - String Utilities & Schema Diff Demo</title>
   <style>
     body { font-family: system-ui, -apple-system, sans-serif; max-width: 900px; margin: 0 auto; padding: 2rem; color: #222; }
     h1 { border-bottom: 2px solid #eee; padding-bottom: 0.5rem; }
     .identity { background: #f6f8fa; padding: 1rem; border-radius: 6px; margin: 1rem 0; font-family: monospace; }
     #demo-output { background: #fff; border: 1px solid #eee; padding: 1rem; border-radius: 6px; white-space: pre-wrap; font-family: monospace; }
+    #schema-diff-output { background: #f8f9fa; border: 1px solid #eee; padding: 1rem; border-radius: 6px; white-space: pre-wrap; font-family: monospace; margin-top: 1rem; }
     table { border-collapse: collapse; margin-top: 1rem; }
     td, th { border: 1px solid #ddd; padding: 0.5rem 1rem; }
+    .section { margin-top: 1.5rem; }
   </style>
 </head>
 <body>
@@ -27,10 +29,29 @@
   <h2>String Utilities Demo</h2>
   <div id="demo-output">Loading demo...</div>
 
+  <div class="section">
+    <h2>JSON Schema Diff Demo</h2>
+    <p>Shows the computed diff between two small example schemas (JSON and human-friendly text).</p>
+    <div id="schema-inputs" style="display:flex; gap:1rem;">
+      <div style="flex:1">
+        <h3>Schema A</h3>
+        <pre id="schema-a" style="background:#fff; padding:8px; border-radius:6px; border:1px solid #eee;">{}</pre>
+      </div>
+      <div style="flex:1">
+        <h3>Schema B</h3>
+        <pre id="schema-b" style="background:#fff; padding:8px; border-radius:6px; border:1px solid #eee;">{}</pre>
+      </div>
+    </div>
+    <h3>Diff (JSON)</h3>
+    <pre id="schema-diff-json" style="background:#111; color:#fff; padding:12px; border-radius:6px;"></pre>
+    <h3>Diff (Text)</h3>
+    <pre id="schema-diff-output">Computing...</pre>
+  </div>
+
   <script type="module">
     try {
       const lib = await import('./lib.js');
-      const { name, version, description, slugify, truncate, camelCase, kebabCase, titleCase, wordWrap, stripHtml, escapeRegex, pluralize, levenshtein } = lib;
+      const { name, version, description, slugify, truncate, camelCase, kebabCase, titleCase, wordWrap, stripHtml, escapeRegex, pluralize, levenshtein, diffSchemas, formatChanges } = lib;
       document.getElementById('lib-name').textContent = name;
       document.getElementById('lib-version').textContent = version;
       document.getElementById('lib-description').textContent = description || '(no description)';
@@ -64,9 +85,44 @@
       }
 
       document.getElementById('demo-output').textContent = JSON.stringify(runDemo(), null, 2);
-      document.title = name + ' v' + version + ' — String Utils Demo';
+      document.title = name + ' v' + version + ' — Demo';
+
+      // Schema diff demo
+      const schemaA = {
+        definitions: {
+          address: { type: "object", properties: { street: { type: "string" } }, required: ["street"] }
+        },
+        type: "object",
+        properties: {
+          id: { type: "string" },
+          addr: { $ref: "#/definitions/address" }
+        },
+        required: ["id"]
+      };
+
+      const schemaB = {
+        definitions: {
+          address: { type: "object", properties: { street: { type: "string" }, city: { type: "string" } }, required: ["street"] }
+        },
+        type: "object",
+        properties: {
+          id: { type: "string" },
+          addr: { $ref: "#/definitions/address" },
+          email: { type: "string" }
+        },
+        required: ["id", "email"]
+      };
+
+      document.getElementById('schema-a').textContent = JSON.stringify(schemaA, null, 2);
+      document.getElementById('schema-b').textContent = JSON.stringify(schemaB, null, 2);
+
+      const changes = diffSchemas(schemaA, schemaB);
+      document.getElementById('schema-diff-json').textContent = JSON.stringify(changes, null, 2);
+      document.getElementById('schema-diff-output').textContent = formatChanges(changes);
+
     } catch (e) {
       document.getElementById('demo-output').textContent = 'Failed to load demo: ' + e.message;
+      document.getElementById('schema-diff-output').textContent = 'Failed to load schema diff demo: ' + e.message;
     }
   </script>
 </body>

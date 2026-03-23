@@ -1,59 +1,131 @@
-# repo — String Utilities
+# repo — String Utilities and JSON Schema Diff
 
-This repository contains a small collection of string utility functions implemented in plain JavaScript (ESM). The functions are browser-safe and Node.js-compatible.
+This repository contains a small collection of string utility functions implemented in plain JavaScript (ESM) together with a JSON Schema diff engine that helps detect changes between two JSON Schema (Draft-07) documents.
 
-Exported functions
+Exported functions (string utilities)
 
-- slugify(input) — create URL-friendly slugs (normalises and removes diacritics when possible)
-- truncate(input, maxLength = 30, ellipsis = '...') — truncate strings (Unicode-aware)
-- camelCase(input) — convert to camelCase identifier
-- kebabCase(input) — convert to kebab-case
-- titleCase(input) — Capitalise first letter of each word
-- wordWrap(input, width = 80) — wrap text to a given width (Unicode-aware)
-- stripHtml(input) — remove HTML tags and decode basic entities
-- escapeRegex(input) — escape special regex characters
-- pluralize(word, count = null) — basic English pluraliser (supports some irregulars)
-- levenshtein(a, b) — Levenshtein edit distance (Unicode-aware)
+- slugify(input)
+- truncate(input, maxLength = 30, ellipsis = '...')
+- camelCase(input)
+- kebabCase(input)
+- titleCase(input)
+- wordWrap(input, width = 80)
+- stripHtml(input)
+- escapeRegex(input)
+- pluralize(word, count = null)
+- levenshtein(a, b)
+- diffSchemas(schemaA, schemaB) — compute structured diffs between two JSON Schemas
+- resolveLocalRefs(schema) — resolve local JSON Pointer $ref entries (throws on remote $ref)
+- classifyChange(change) — classify a change as 'breaking' | 'compatible' | 'informational'
+- formatChanges(changes, options) — produce human-readable text or JSON
 
-Usage examples
+JSON Schema diff engine
 
-Importing in Node or the browser (ESM):
+New functions:
+
+- diffSchemas(schemaA, schemaB) — returns an array of change records describing differences between two schemas
+- resolveLocalRefs(schema) — resolves local JSON Pointer $ref within a single document; throws on remote refs
+- classifyChange(change) — classifies a change as "breaking", "compatible", or "informational"
+- formatChanges(changes, options) — render changes as human-readable text (or JSON with options.style = 'json')
+
+Change record examples
+
+A change record is an object similar to:
 
 ```js
-import { slugify, truncate, camelCase, kebabCase, titleCase, wordWrap, stripHtml, escapeRegex, pluralize, levenshtein } from './src/lib/main.js';
-
-console.log(slugify('Hello World!')); // 'hello-world'
-console.log(truncate('This is an example sentence', 10)); // 'This is...'
-console.log(camelCase('hello_world')); // 'helloWorld'
-console.log(kebabCase('helloWorld')); // 'hello-world'
-console.log(titleCase('this is a title')); // 'This Is A Title'
-console.log(wordWrap('Lorem ipsum dolor sit amet', 10));
-console.log(stripHtml('<p>Hello &amp; world</p>')); // 'Hello & world'
-console.log(escapeRegex('file.*(test)?'));
-console.log(pluralize('child')); // 'children'
-console.log(levenshtein('kitten','sitting')); // 3
+{ path: "/properties/email", changeType: "type-changed", before: "string", after: "number" }
 ```
 
-Notes about Unicode and edge-cases
+Supported changeType values include:
 
-- The functions are written to be reasonably Unicode-friendly: length-sensitive operations (truncate, wordWrap, levenshtein) operate on Unicode code points (using Array.from) rather than UTF-16 code units. This avoids splitting emoji surrogate pairs in most cases.
-- slugify attempts to normalise Unicode and strip diacritical marks where possible, but non-Latin scripts will be preserved as-is when supported by the runtime's Unicode handling.
-- The pluralize function is intentionally simple — it covers common English rules and several irregular nouns, but it is not a comprehensive linguistic engine.
-- All functions tolerate null/undefined inputs and return sensible defaults (usually an empty string).
+- property-added / property-removed
+- type-changed
+- required-added / required-removed
+- enum-value-added / enum-value-removed
+- description-changed
+- nested-changed (contains a `changes` array with sub-diffs)
 
-Website demo
+Usage example
 
-Open `src/web/index.html` in a browser (or run `npm run build:web` then serve `docs/`) to see a live demo of the utilities.
+```js
+import { diffSchemas, formatChanges } from './src/lib/main.js';
 
-Tests
+const schemaA = {
+  definitions: {
+    address: { type: "object", properties: { street: { type: "string" } }, required: ["street"] }
+  },
+  type: "object",
+  properties: {
+    id: { type: "string" },
+    addr: { $ref: "#/definitions/address" }
+  },
+  required: ["id"]
+};
 
-Run the unit tests with:
+const schemaB = {
+  definitions: {
+    address: { type: "object", properties: { street: { type: "string" }, city: { type: "string" } }, required: ["street"] }
+  },
+  type: "object",
+  properties: {
+    id: { type: "string" },
+    addr: { $ref: "#/definitions/address" },
+    email: { type: "string" }
+  },
+  required: ["id", "email"]
+};
+
+const changes = diffSchemas(schemaA, schemaB);
+console.log(formatChanges(changes));
+```
+
+Sample human-readable output
+
+```
+[COMPATIBLE] /properties/addr: nested-changed (1 changes)
+  [COMPATIBLE] /properties/addr/properties/city: property-added (type: "string")
+[COMPATIBLE] /properties/email: property-added (type: "string")
+[BREAKING] /properties/email: required-added
+```
+
+Notes
+
+- The diff engine resolves local (same-document) JSON Pointer references ($ref starting with '#') before comparing constructs so that changes in referenced definitions are visible at usage sites.
+- Remote $ref (http/https or file references) are considered out-of-scope and will cause resolveLocalRefs to throw.
+
+Compute the diff:
+
+Open `src/web/index.html` in a browser (or run `npm run build:web` then serve `docs/`) to see a live demo of the string utilities and the schema diff engine.
+
+const changes = diffSchemas(oldSchema, newSchema);
+console.log(JSON.stringify(changes, null, 2));
+// or print human-friendly text
+console.log(formatChanges(changes));
+```
+
+Sample formatted output:
+
+```
+Removed property /properties/email (breaking) [was required]
+Type changed at /properties/age: "number" -> "string" (breaking)
+Added property /properties/phone (compatible)
+Required property removed /required/email (compatible)
+```
+
+Notes
+
+- The diff engine resolves local `$ref` pointers (JSON Pointer form, e.g. `#/definitions/Address`) before diffing. Remote `$ref` (URLs) are not supported and will throw an error.
+- The diff traverses `properties`, `items`, `allOf`, `oneOf`, and `anyOf` recursively and returns an array of change records. Each change record includes a `path` and `changeType` and contextual `before`/`after` data where relevant.
+
+Running tests
 
 ```bash
 npm ci
 npm test
 ```
 
-License
+Website demo
 
-MIT
+Open `src/web/index.html` in a browser to see a live demo of the string utilities and the schema diff engine.
+
+License: MIT
