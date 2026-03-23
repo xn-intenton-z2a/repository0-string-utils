@@ -251,9 +251,10 @@ export function classifyChange(change) {
   return "informational";
 }
 
-export function formatChanges(changes, options = { style: "text" }) {
+export function formatChanges(changes, options = {}) {
   if (!Array.isArray(changes)) return "";
-  if (options.style === "json") return JSON.stringify(changes, null, 2);
+  const asJson = options?.format === 'json' || options?.style === 'json' || options?.json === true;
+  if (asJson) return JSON.stringify(changes, null, 2);
   // text
   const lines = [];
   for (const c of changes) {
