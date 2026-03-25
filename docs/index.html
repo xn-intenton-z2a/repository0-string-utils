@@ -8,15 +8,13 @@
   <meta property="og:description" content="An autonomous repository powered by agentic-lib">
   <meta property="og:type" content="website">
   <style>
-    body { font-family: system-ui, -apple-system, sans-serif; max-width: 900px; margin: 0 auto; padding: 2rem; color: #333; }
+    body { font-family: system-ui, -apple-system, sans-serif; max-width: 800px; margin: 0 auto; padding: 2rem; color: #333; }
     h1 { border-bottom: 2px solid #eee; padding-bottom: 0.5rem; }
     a { color: #0366d6; }
     .identity { background: #f6f8fa; padding: 1rem; border-radius: 6px; margin: 1rem 0; font-family: monospace; }
     .identity dt { font-weight: bold; color: #666; }
     .identity dd { margin: 0 0 0.5rem 0; font-size: 1.1rem; }
-    #demo-output { background: #1e1e1e; color: #d4d4d4; padding: 1rem; border-radius: 6px; font-family: monospace; white-space: pre-wrap; min-height: 4rem; }
-    .examples { margin-top: 1rem; }
-    .examples dt { font-weight: bold; }
+    #demo-output { background: #1e1e1e; color: #d4d4d4; padding: 1rem; border-radius: 6px; font-family: monospace; white-space: pre-wrap; min-height: 2rem; }
   </style>
 </head>
 <body>
@@ -29,35 +27,17 @@
       <dd id="lib-description">loading...</dd>
     </dl>
   </div>
-  <h2>Demo</h2>
+  <h2>Output</h2>
   <div id="demo-output">Loading library...</div>
   <h2>About</h2>
   <p>This website uses the library. See <a href="https://github.com/xn-intenton-z2a/repository0">the repository</a> for source code and mission details.</p>
   <script type="module">
     try {
-      const m = await import('./lib.js');
-      const { name, version, description, slugify, truncate, camelCase, kebabCase, titleCase, wordWrap, stripHtml, escapeRegex, pluralize, levenshtein } = m;
-
+      const { name, version, description } = await import('./lib.js');
       document.getElementById('lib-name').textContent = name;
       document.getElementById('lib-version').textContent = version;
       document.getElementById('lib-description').textContent = description || '(no description)';
-
-      const examples = {
-        "slugify('Hello World!')": slugify('Hello World!'),
-        "truncate('Hello World', 8)": truncate('Hello World', 8),
-        "camelCase('foo-bar-baz')": camelCase('foo-bar-baz'),
-        "kebabCase('Foo Bar')": kebabCase('Foo Bar'),
-        "titleCase('hello world')": titleCase('hello world'),
-        "wordWrap('The quick brown fox', 10)": wordWrap('The quick brown fox', 10),
-        "stripHtml('<p>Hello &amp; welcome</p>')": stripHtml('<p>Hello &amp; welcome</p>'),
-        "escapeRegex('a.b')": escapeRegex('a.b'),
-        "pluralize('leaf')": pluralize('leaf'),
-        "levenshtein('kitten','sitting')": levenshtein('kitten','sitting')
-      };
-
-      let out = `${name}@${version}\n\n`;
-      out += Object.entries(examples).map(([k,v]) => `${k} => ${v}`).join('\n');
-      document.getElementById('demo-output').textContent = out;
+      document.getElementById('demo-output').textContent = JSON.stringify({ name, version, description }, null, 2);
       document.title = name + ' v' + version;
     } catch (e) {
       document.getElementById('lib-version').textContent = '(error)';
