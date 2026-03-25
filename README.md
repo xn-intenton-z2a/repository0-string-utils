@@ -1,65 +1,61 @@
 # repo
 
-This repository is powered by [intentiön agentic-lib](https://github.com/xn-intenton-z2a/agentic-lib) — autonomous code transformation driven by GitHub Copilot. Write a mission, and the system generates issues, writes code, runs tests, and opens pull requests.
+This repository is powered by [intentiön agentic-lib](https://github.com/xn-intenton-z2a/agentic-lib) — autonomous code transformation driven by GitHub Copilot.
 
-## Getting Started
+## String Utilities
 
-### Step 1: Create Your Repository
+This project implements a small library of string utility functions exported from `src/lib/main.js` and re-exported to the website at `src/web/lib.js`.
 
-Click **"Use this template"** on the [repository0](https://github.com/xn-intenton-z2a/repository0) page, or use the GitHub CLI:
+Available named exports:
 
-```bash
-gh repo create my-project --template xn-intenton-z2a/repository0 --public --clone
-cd my-project
-```
+- slugify(input) — convert to URL-friendly slug (lowercase, hyphens, strip non-alphanumeric)
+- truncate(input, maxLength = 100, suffix = "…") — truncate with suffix, don't break mid-word
+- camelCase(input) — convert to camelCase
+- kebabCase(input) — convert to kebab-case
+- titleCase(input) — capitalise first letter of each word
+- wordWrap(input, width = 80) — soft wrap text at word boundaries
+- stripHtml(input) — remove HTML tags and decode common entities
+- escapeRegex(input) — escape special regex characters
+- pluralize(input) — basic English pluralisation
+- levenshtein(a, b) — compute edit distance between two strings
 
-### Step 2: Initialise with a Mission
-
-Run the init workflow from the GitHub Actions tab (**agentic-lib-init** with mode=purge), or use the CLI:
-
-```bash
-npx @xn-intenton-z2a/agentic-lib init --purge --mission 7-kyu-understand-fizz-buzz
-```
-
-This resets the repository to a clean state with your chosen mission in `MISSION.md`. The default mission is **fizz-buzz** (7-kyu).
-
-## String utilities
-
-This project implements a set of small, focused string utility functions exported from `src/lib/main.js`.
-
-Example (Node):
+Usage examples (Node / ESM):
 
 ```js
-import { slugify, truncate, camelCase, kebabCase, titleCase, wordWrap, stripHtml, escapeRegex, pluralize, levenshtein } from './src/lib/main.js';
+import {
+  slugify,
+  truncate,
+  camelCase,
+  kebabCase,
+  titleCase,
+  wordWrap,
+  stripHtml,
+  escapeRegex,
+  pluralize,
+  levenshtein,
+} from './src/lib/main.js';
 
-console.log(slugify('Hello World!')); // 'hello-world'
-console.log(truncate('Hello World', 8)); // 'Hello…'
-console.log(camelCase('foo-bar-baz')); // 'fooBarBaz'
-console.log(levenshtein('kitten','sitting')); // 3
+console.log(slugify('Hello World!')) // 'hello-world'
+console.log(truncate('Hello World', 8)) // 'Hello…'
+console.log(camelCase('foo-bar-baz')) // 'fooBarBaz'
+console.log(kebabCase('fooBarBaz')) // 'foo-bar-baz'
+console.log(titleCase('hello world')) // 'Hello World'
+console.log(wordWrap('The quick brown fox jumps over the lazy dog', 12))
+console.log(stripHtml('<p>Hello &amp; <strong>World</strong></p>')) // 'Hello & World'
+console.log(escapeRegex('.*+?^${}()|[]\\'))
+console.log(pluralize('baby')) // 'babies'
+console.log(levenshtein('kitten', 'sitting')) // 3
 ```
 
-Example (browser): the site at `src/web/index.html` imports `src/web/lib.js` which re-exports the same functions for demos.
+Website demo
 
-## Updating
+Open `src/web/index.html` (served from project root) to see a live demo that uses the library directly via `src/web/lib.js`.
 
-The `init` workflow updates the agentic infrastructure automatically. To update manually:
+Tests
 
-```bash
-npx @xn-intenton-z2a/agentic-lib@latest init --purge
-```
+- Unit tests: `npm test` (vitest)
+- Behaviour tests: `npm run test:behaviour` (Playwright)
 
-## File Layout
+Mission
 
-```
-src/lib/main.js              <- library (browser-safe)
-src/web/index.html            <- web page (imports ./lib.js)
-tests/unit/*.test.js          <- unit tests
-tests/behaviour/              <- Playwright E2E
-docs/                         <- build output for GitHub Pages
-```
-
-## Links
-
-- [MISSION.md](MISSION.md) — your project goals
-- [agentic-lib documentation](https://github.com/xn-intenton-z2a/agentic-lib) — full SDK docs
-- [intentiön website](https://xn--intenton-z2a.com)
+The library implements the 10 string utilities required by the mission in `MISSION.md` and includes unit tests and a web demo.

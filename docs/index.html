@@ -1,12 +1,9 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>repository0</title>
-  <meta property="og:title" content="repository0">
-  <meta property="og:description" content="An autonomous repository powered by agentic-lib">
-  <meta property="og:type" content="website">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>repository0 - String Utilities</title>
   <style>
     body { font-family: system-ui, -apple-system, sans-serif; max-width: 900px; margin: 0 auto; padding: 2rem; color: #333; }
     h1 { border-bottom: 2px solid #eee; padding-bottom: 0.5rem; }
@@ -15,10 +12,9 @@
     .identity dt { font-weight: bold; color: #666; }
     .identity dd { margin: 0 0 0.5rem 0; font-size: 1.1rem; }
     #demo-output { background: #1e1e1e; color: #d4d4d4; padding: 1rem; border-radius: 6px; font-family: monospace; white-space: pre-wrap; min-height: 2rem; }
-    .demo-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
-    .demo-card { background: #fff; border: 1px solid #eee; padding: 1rem; border-radius: 6px; }
-    .demo-card h3 { margin: 0 0 0.5rem 0; }
-    .mono { font-family: monospace; background: #f7f7f7; padding: 0.5rem; display: inline-block; }
+    .feature { margin: 1rem 0; }
+    .feature h3 { margin: 0 0 0.25rem 0; }
+    .feature p { margin: 0 0 0.5rem 0; }
   </style>
 </head>
 <body>
@@ -32,29 +28,14 @@
     </dl>
   </div>
 
-  <h2>Demo</h2>
-  <div class="demo-grid">
-    <div class="demo-card">
-      <h3>Identity</h3>
-      <div id="demo-output">Loading library...</div>
-    </div>
-    <div class="demo-card">
-      <h3>Examples</h3>
-      <div><strong>slugify("Hello World!"):</strong> <span id="demo-slug" class="mono"></span></div>
-      <div><strong>truncate("Hello World", 8):</strong> <span id="demo-truncate" class="mono"></span></div>
-      <div><strong>camelCase("foo-bar-baz"):</strong> <span id="demo-camel" class="mono"></span></div>
-      <div><strong>kebabCase("Foo BarBaz"):</strong> <span id="demo-kebab" class="mono"></span></div>
-      <div><strong>titleCase("hello world"):</strong> <span id="demo-title" class="mono"></span></div>
-      <div><strong>wordWrap(..., 12):</strong> <pre id="demo-wrap" class="mono" style="display:block;white-space:pre-wrap;"></pre></div>
-      <div><strong>stripHtml("<p>Hello &amp; <em>World</em></p>"):</strong> <span id="demo-strip" class="mono"></span></div>
-      <div><strong>escapeRegex("(a+b)*"):</strong> <span id="demo-escape" class="mono"></span></div>
-      <div><strong>pluralize("city"):</strong> <span id="demo-plural" class="mono"></span></div>
-      <div><strong>levenshtein("kitten","sitting"):</strong> <span id="demo-lev" class="mono"></span></div>
-    </div>
+  <h2>String Utilities Demo</h2>
+  <div id="features">
+    <!-- Each feature will be populated by script -->
   </div>
 
-  <h2>About</h2>
-  <p>This website uses the library. See <a href="https://github.com/xn-intenton-z2a/repository0">the repository</a> for source code and mission details.</p>
+  <h2>Raw Output</h2>
+  <div id="demo-output">Loading library...</div>
+
   <script type="module">
     try {
       const lib = await import('./lib.js');
@@ -63,20 +44,51 @@
       document.getElementById('lib-version').textContent = version;
       document.getElementById('lib-description').textContent = description || '(no description)';
       document.title = name + ' v' + version;
-      document.getElementById('demo-output').textContent = JSON.stringify({ name, version, description }, null, 2);
 
-      // Populate demos
-      document.getElementById('demo-slug').textContent = lib.slugify('Hello World!');
-      document.getElementById('demo-truncate').textContent = lib.truncate('Hello World', 8);
-      document.getElementById('demo-camel').textContent = lib.camelCase('foo-bar-baz');
-      document.getElementById('demo-kebab').textContent = lib.kebabCase('Foo BarBaz');
-      document.getElementById('demo-title').textContent = lib.titleCase('hello world');
-      document.getElementById('demo-wrap').textContent = lib.wordWrap('The quick brown fox jumps over the lazy dog', 12);
-      document.getElementById('demo-strip').textContent = lib.stripHtml('<p>Hello &amp; <em>World</em></p>');
-      document.getElementById('demo-escape').textContent = lib.escapeRegex('(a+b)*');
-      document.getElementById('demo-plural').textContent = lib.pluralize('city');
-      document.getElementById('demo-lev').textContent = String(lib.levenshtein('kitten','sitting'));
+      const inputs = {
+        slugify: 'Hello World!',
+        truncate: ['Hello World', 8],
+        camelCase: 'foo-bar-baz',
+        kebabCase: 'fooBarBaz',
+        titleCase: 'hello world from library',
+        wordWrap: ['The quick brown fox jumps over the lazy dog', 12],
+        stripHtml: '<p>Hello <strong>World</strong> &amp; friends</p>',
+        escapeRegex: '.*+?^${}()|[]\\',
+        pluralize: 'baby',
+        levenshtein: ['kitten', 'sitting']
+      };
 
+      const results = {
+        slugify: lib.slugify(inputs.slugify),
+        truncate: lib.truncate(...inputs.truncate),
+        camelCase: lib.camelCase(inputs.camelCase),
+        kebabCase: lib.kebabCase(inputs.kebabCase),
+        titleCase: lib.titleCase(inputs.titleCase),
+        wordWrap: lib.wordWrap(...inputs.wordWrap),
+        stripHtml: lib.stripHtml(inputs.stripHtml),
+        escapeRegex: lib.escapeRegex(inputs.escapeRegex),
+        pluralize: lib.pluralize(inputs.pluralize),
+        levenshtein: lib.levenshtein(...inputs.levenshtein)
+      };
+
+      const featuresEl = document.getElementById('features');
+      for (const key of Object.keys(results)) {
+        const container = document.createElement('div');
+        container.className = 'feature';
+        const h3 = document.createElement('h3');
+        h3.textContent = key;
+        const p = document.createElement('p');
+        const input = inputs[key];
+        p.innerHTML = '<strong>Input:</strong> ' + (Array.isArray(input) ? JSON.stringify(input) : String(input));
+        const out = document.createElement('pre');
+        out.textContent = String(results[key]);
+        container.appendChild(h3);
+        container.appendChild(p);
+        container.appendChild(out);
+        featuresEl.appendChild(container);
+      }
+
+      document.getElementById('demo-output').textContent = JSON.stringify({ name, version, results }, null, 2);
     } catch (e) {
       document.getElementById('lib-version').textContent = '(error)';
       document.getElementById('lib-description').textContent = e.message;
