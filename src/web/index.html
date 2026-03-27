@@ -1,20 +1,20 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>repository0 - String Utilities</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>repository0</title>
+  <meta property="og:title" content="repository0">
+  <meta property="og:description" content="An autonomous repository powered by agentic-lib">
+  <meta property="og:type" content="website">
   <style>
-    body { font-family: system-ui, -apple-system, sans-serif; max-width: 900px; margin: 0 auto; padding: 2rem; color: #333; }
+    body { font-family: system-ui, -apple-system, sans-serif; max-width: 800px; margin: 0 auto; padding: 2rem; color: #333; }
     h1 { border-bottom: 2px solid #eee; padding-bottom: 0.5rem; }
     a { color: #0366d6; }
     .identity { background: #f6f8fa; padding: 1rem; border-radius: 6px; margin: 1rem 0; font-family: monospace; }
     .identity dt { font-weight: bold; color: #666; }
     .identity dd { margin: 0 0 0.5rem 0; font-size: 1.1rem; }
     #demo-output { background: #1e1e1e; color: #d4d4d4; padding: 1rem; border-radius: 6px; font-family: monospace; white-space: pre-wrap; min-height: 2rem; }
-    .feature { margin: 1rem 0; }
-    .feature h3 { margin: 0 0 0.25rem 0; }
-    .feature p { margin: 0 0 0.5rem 0; }
   </style>
 </head>
 <body>
@@ -27,68 +27,18 @@
       <dd id="lib-description">loading...</dd>
     </dl>
   </div>
-
-  <h2>String Utilities Demo</h2>
-  <div id="features">
-    <!-- Each feature will be populated by script -->
-  </div>
-
-  <h2>Raw Output</h2>
+  <h2>Output</h2>
   <div id="demo-output">Loading library...</div>
-
+  <h2>About</h2>
+  <p>This website uses the library. See <a href="https://github.com/xn-intenton-z2a/repository0">the repository</a> for source code and mission details.</p>
   <script type="module">
     try {
-      const lib = await import('./lib.js');
-      const { name, version, description } = lib;
+      const { name, version, description } = await import('./lib.js');
       document.getElementById('lib-name').textContent = name;
       document.getElementById('lib-version').textContent = version;
       document.getElementById('lib-description').textContent = description || '(no description)';
+      document.getElementById('demo-output').textContent = JSON.stringify({ name, version, description }, null, 2);
       document.title = name + ' v' + version;
-
-      const inputs = {
-        slugify: 'Hello World!',
-        truncate: ['Hello World', 8],
-        camelCase: 'foo-bar-baz',
-        kebabCase: 'fooBarBaz',
-        titleCase: 'hello world from library',
-        wordWrap: ['The quick brown fox jumps over the lazy dog', 12],
-        stripHtml: '<p>Hello <strong>World</strong> &amp; friends</p>',
-        escapeRegex: '.*+?^${}()|[]\\',
-        pluralize: 'baby',
-        levenshtein: ['kitten', 'sitting']
-      };
-
-      const results = {
-        slugify: lib.slugify(inputs.slugify),
-        truncate: lib.truncate(...inputs.truncate),
-        camelCase: lib.camelCase(inputs.camelCase),
-        kebabCase: lib.kebabCase(inputs.kebabCase),
-        titleCase: lib.titleCase(inputs.titleCase),
-        wordWrap: lib.wordWrap(...inputs.wordWrap),
-        stripHtml: lib.stripHtml(inputs.stripHtml),
-        escapeRegex: lib.escapeRegex(inputs.escapeRegex),
-        pluralize: lib.pluralize(inputs.pluralize),
-        levenshtein: lib.levenshtein(...inputs.levenshtein)
-      };
-
-      const featuresEl = document.getElementById('features');
-      for (const key of Object.keys(results)) {
-        const container = document.createElement('div');
-        container.className = 'feature';
-        const h3 = document.createElement('h3');
-        h3.textContent = key;
-        const p = document.createElement('p');
-        const input = inputs[key];
-        p.innerHTML = '<strong>Input:</strong> ' + (Array.isArray(input) ? JSON.stringify(input) : String(input));
-        const out = document.createElement('pre');
-        out.textContent = String(results[key]);
-        container.appendChild(h3);
-        container.appendChild(p);
-        container.appendChild(out);
-        featuresEl.appendChild(container);
-      }
-
-      document.getElementById('demo-output').textContent = JSON.stringify({ name, version, results }, null, 2);
     } catch (e) {
       document.getElementById('lib-version').textContent = '(error)';
       document.getElementById('lib-description').textContent = e.message;
