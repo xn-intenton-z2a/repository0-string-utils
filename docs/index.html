@@ -4,17 +4,14 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>repository0</title>
-  <meta property="og:title" content="repository0">
-  <meta property="og:description" content="An autonomous repository powered by agentic-lib">
-  <meta property="og:type" content="website">
   <style>
-    body { font-family: system-ui, -apple-system, sans-serif; max-width: 800px; margin: 0 auto; padding: 2rem; color: #333; }
+    body { font-family: system-ui, -apple-system, sans-serif; max-width: 900px; margin: 0 auto; padding: 2rem; color: #222; }
     h1 { border-bottom: 2px solid #eee; padding-bottom: 0.5rem; }
-    a { color: #0366d6; }
     .identity { background: #f6f8fa; padding: 1rem; border-radius: 6px; margin: 1rem 0; font-family: monospace; }
-    .identity dt { font-weight: bold; color: #666; }
-    .identity dd { margin: 0 0 0.5rem 0; font-size: 1.1rem; }
-    #demo-output { background: #1e1e1e; color: #d4d4d4; padding: 1rem; border-radius: 6px; font-family: monospace; white-space: pre-wrap; min-height: 2rem; }
+    .demo { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-top: 1rem; }
+    .demo pre { background: #1e1e1e; color: #d4d4d4; padding: 1rem; border-radius: 6px; font-family: monospace; white-space: pre-wrap; }
+    .demo .item { background: #fff; padding: 0.75rem; border-radius: 6px; border: 1px solid #eee; }
+    .label { font-weight: 600; color: #444; margin-bottom: 0.25rem; }
   </style>
 </head>
 <body>
@@ -27,22 +24,60 @@
       <dd id="lib-description">loading...</dd>
     </dl>
   </div>
-  <h2>Output</h2>
-  <div id="demo-output">Loading library...</div>
-  <h2>About</h2>
-  <p>This website uses the library. See <a href="https://github.com/xn-intenton-z2a/repository0">the repository</a> for source code and mission details.</p>
+
+  <h2>String Utilities Demo</h2>
+  <div class="demo" id="demo-grid">
+    <!-- JS will populate demo items -->
+  </div>
+
+  <h2>Raw Output</h2>
+  <pre id="demo-output">Loading library demo...</pre>
+
   <script type="module">
     try {
-      const { name, version, description } = await import('./lib.js');
+      const lib = await import('./lib.js');
+      const {
+        name, version, description,
+        slugify, truncate, camelCase, kebabCase, titleCase, wordWrap,
+        stripHtml, escapeRegex, pluralize, levenshteinDistance
+      } = lib;
+
       document.getElementById('lib-name').textContent = name;
       document.getElementById('lib-version').textContent = version;
       document.getElementById('lib-description').textContent = description || '(no description)';
-      document.getElementById('demo-output').textContent = JSON.stringify({ name, version, description }, null, 2);
+
+      const demoData = {
+        slugify: slugify('Hello World!'),
+        truncate: truncate('Hello World', 8),
+        camelCase: camelCase('foo-bar-baz'),
+        kebabCase: kebabCase('fooBarBaz'),
+        titleCase: titleCase('hello world from the library'),
+        wordWrap: wordWrap('The quick brown fox jumps over the lazy dog', 12),
+        stripHtml: stripHtml('<p>Hello &amp; <strong>world</strong></p>'),
+        escapeRegex: escapeRegex('^a+b(c)?$'),
+        pluralize_box: pluralize('box'),
+        pluralize_lady: pluralize('lady'),
+        levenshtein: levenshteinDistance('kitten', 'sitting')
+      };
+
+      const grid = document.getElementById('demo-grid');
+      Object.entries(demoData).forEach(([k, v]) => {
+        const item = document.createElement('div');
+        item.className = 'item';
+        const label = document.createElement('div');
+        label.className = 'label';
+        label.textContent = k;
+        const pre = document.createElement('pre');
+        pre.textContent = typeof v === 'string' ? v : JSON.stringify(v, null, 2);
+        item.appendChild(label);
+        item.appendChild(pre);
+        grid.appendChild(item);
+      });
+
+      document.getElementById('demo-output').textContent = JSON.stringify(demoData, null, 2);
       document.title = name + ' v' + version;
-    } catch (e) {
-      document.getElementById('lib-version').textContent = '(error)';
-      document.getElementById('lib-description').textContent = e.message;
-      document.getElementById('demo-output').textContent = 'Failed to load library: ' + e.message;
+    } catch (err) {
+      document.getElementById('demo-output').textContent = 'Failed to load demo: ' + err.message;
     }
   </script>
 </body>
